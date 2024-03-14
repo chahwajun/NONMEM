@@ -1,0 +1,39 @@
+sd <- read.table("sdtab01", header=T, skip=1) 
+
+nrow(sd)
+par (mfrow=c(2,2), mar=c(5,4.5,3,3))
+plot(sd$PRED,sd$DV,type="n",
+     xlab="Population Prediction (ng/mL)", #xlim=c(0,5000),#ylim=c(0,5000),
+     ylab="Observation (ng/mL)")
+points(sd$PRED[sd$MDV==0],sd$DV[sd$MDV==0],pch=21,
+       cex=0.9,col="black",bg="white")
+lines(loess.smooth(x=sd$PRED[sd$MDV==0], y=sd$DV[sd$MDV==0]), col="red", lwd=2)
+abline(0,1) 
+
+
+plot(sd$IPRE,sd$DV,type="n",
+     xlab="Individual Prediction (ng/mL)", #xlim=c(0,5000),#ylim=c(0,5000),
+     ylab="Observation (ng/mL)")
+points(sd$IPRE[sd$MDV==0],sd$DV[sd$MDV==0],pch=21,
+       cex=0.9, col="black",bg="white")
+lines(loess.smooth(x=sd$IPRE[sd$MDV==0], y=sd$DV[sd$MDV==0]), col="red", lwd=2)
+abline(0,1)
+
+
+plot(sd$IPRE,abs(sd$IWRE),type="n", #ylim=c(0,5),
+     xlab="Individual Prediction (ng/mL)",
+     ylab="|IWRES|")
+points(sd$IPRE[sd$MDV==0],abs(sd$IWRE[sd$MDV==0]),pch=21, 
+       cex=0.9, col="black",bg="white")
+lines(loess.smooth(x=sd$IPRE[sd$MDV==0], y=abs(sd$IWRE[sd$MDV==0])), col="red", lwd=2)
+abline(0, 0)
+
+
+plot(sd$TIME,sd$CWRES,type="n",
+     xlab="Time (h)",xaxt="n",
+     ylab="Conditional Weighted Residuals")
+axis(1,seq(0,1680,by=336))
+points(sd$TIME[sd$MDV==0],(sd$CWRES[sd$MDV==0]), pch=21, 
+       cex=0.9, col="black",bg="white")
+lines(loess.smooth(x=sd$TIME[sd$MDV==0], y=sd$CWRES[sd$MDV==0]), col="red", lwd=2)
+abline(0, 0)

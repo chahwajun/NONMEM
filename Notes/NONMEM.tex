@@ -1,0 +1,320 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={NONMEM},
+  pdfauthor={HJ},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{NONMEM}
+\author{HJ}
+\date{2024-03-13}
+
+\begin{document}
+\maketitle
+
+\textbf{NONMEM의 수행 목적과 수행과정}
+
+Modeling이란?
+
+Model이란 어떤 전체 System(약동학에서는 사람??)을 설명하기 위한
+mathematical model를 의미
+
+Model은 실험적으로 구해진 data에서 만들어지는데 data는 input이
+system(사람)을 거처 오면서 noise가 생기게 되고, output이 나오고 측정시에
+생기는 error등이 합쳐진 값
+
+Data = Systemic Component + Error
+
+-\textgreater{} 따라서 Modeling의 목적은 이렇게 생성된 Data에서 Error나
+Noise를 구별해 주기 위해서 시행,
+
+System을 거치면서 나오게 된 data를 잘 설명하는 parameter를 찾는 과정
+
+Model에는 structure model을 포함하는데 structure model 안에는 systemic
+component + statistical model(error)가 존재(필연적으로 존재)
+
+-\textgreater{} Modeling 초기에는 systemic component에 초점을 맞추고
+이후에 error model를 포함해서 modeling을 수행
+
+Modeling을 통해 그 약물을 설명하는 true model은 찾을 수는 없음 각각의
+Modeler별로 해석하는 것이 다르기 때문에 right model은 존재하지 않음,
+data에 대한 valid interpretation만이 존재 틀린 model은 존재하지 않음
+
+-\textgreater{} Modeling은 'right model'을 찾는 과정이 아닌 'better
+model'를 찾는 과정
+
+Simulation이란?
+
+Modeling은 기존의 data를 설명하기 위한 수단 이였다면, simulation은
+model은 고정하고 input(투여량, etc)등을 바꿔서 수행하는 과정을 말함
+
+-\textgreater Simulation은 steady-state에 대한 여러가지 maintenance,
+loading dose에 대한 평가 수단을 제공
+
+Simulation의 방법으로 크게 Deterministic/Stochastic(Monte-Carlo) 2가지
+방법이 존재
+
+Deterministic Simulation은 simulation내에서 random component가 없기
+때문에 매번 같은 simulation 결과값을 가지는 반면에 Stochastic
+Simulation의 경우 simulation내에 random component가 존재하기 때문에
+simulation마다 서로 다른 결과값을 가짐
+
+NONMEM으로 \$SIM 구문으로 simulation 수행이 가능하지만 R package인
+`rxode2', 'nonmemr2x'를 이용하면 NONMEM의 output file을 가지고 쉽게
+simulation이 가능
+
+Rxode2 package는 stochastic simulation을 수행하는 R packages
+
+Monte-Carlo simulation -\textgreater{} 중복되지 않고, 독립적인 random
+number를 만들어서 simulation
+
+구체적으로 어떤 식으로 random number를 만드는 지는 잘 모르겠음
+
+기존의 만들어진 Model에서 추정된 THETA, OMEGA, SIGMA값을 모두 고정하고
+simulation함
+
+Parameter의 경우 평균이 THETA이고 분산2이 OMEGA인 정규분포를 따른다고
+가정
+
+\textbf{-\textgreater{} 각 Simulation별로 위의 분포를 만족하는 data가
+만들어지게됨}
+
+NONMEM이란?
+
+NONMEM
+
+Non-Linear Mixed Effect Model로 일반 비선형 회귀 모델을 데이터에
+맞추도록 설계하는 컴퓨터 프로그램, 일반적으로 biological system은
+일반적으로 non-linear
+
+-\textgreater 일반적으로 Linear인 경우 다른 parameter에 상관없이
+일정하게 도함수가 유지되어 직선의 형태를 가지지만 Non-Linear인 경우 다른
+parameter에 따라 도함수가 변하게 되어 직선의 형태를 가지지 않게됨
+
+NONMEM의 수행과정
+
+Initialization -\textgreater{} Estimation step -\textgreater{}
+Covariance step -\textgreater{} Table step : 4단계로 구성
+
+NONMEM을 사용하는 목적
+
+-\textgreater{} population pk analysis를 위해, Cl, K 등과 같은
+parameter의 추정값의 조합을 찾는 것이 목적
+
+여러 방법에 따라 THETA 값들을 estimation하게 됨
+
+-\textgreater{} ELS(Extended Least Square)을 이용한 objective function
+value의 도출, OFV의 차이를 평가하기 위해서 LRT를 사용함
+
+여기서 Likelihood라는 개념이 나오는데 예를 들어 어떠한 Model이 참이라고
+가정하였을 때, Observation data(Model + ERROR)이 가장 높게 나타날
+가능성(잔차를 회소화)을 가진 함수를 찾는 것을 의미, 함수는 정규분포의
+확률밀도함수의 형태를 가진 목적함수(Objective function)를 사용
+
+-\textgreater{} 목적함수를 간단히 하기 위해서 -2log(X)를 하므로 이
+Likelihood를 가장 높이는 것은 -2log(X)를 가장 낮추는 것을 의미함
+
+-\textgreater{} 따라서 Objecitve Function에서 도출된 Objective Function
+Value(OFV)를 최소화하는 Model를 찾는 것이 NONMEM를 사용하는 목적
+
+목적함수를 그래프로 그렸을 때 최소인 점은 극값(도함수 = 0인 x값, local
+minima)을 말하는데 극값이 여러 개 인 경우 찾은 극값이 최소값이 아닐수도
+있다 -\textgreater{} 초기 추정치는 Initial Estimate(IE)를 잘 설정하는
+것이 매우 중요
+
+-\textgreater{} NONMEM을 돌리는 과정(cmd 창)에서 각 iteration이
+gradient=0이라는 뜻은 미분값이 0이여서 가장 낮은 값을 찾은 상태를 의미:
+ERROR를 의미함
+
+DATA FRAME
+
+반드시 Dosing 정보와 TIME = 0에서의 data를 기입해주어야함
+
+-\textgreater{} Dosing이 0(Vehicle)인 경우 0 대신에 0.00001을
+기입해주어서 NONMEM의 오류를 방지
+
+MDV값의 처리
+
+-\textgreater{} MDV는 결측치를 나타내주는 data로 값이 BQL이거나 excel
+파일상에서 OBS값이 없는 경우 1로 처리를 함
+
+-\textgreater{} IV인 경우 time = 0인 부분에 0이라고 쓰여져 있는 경우에
+1로 처리할 것(상식적으로 측정이 불가능하기 때문에 )DV에 `` . '' 으로
+처리하고 MDV값을 1로 처리 해야함, 반대로 PO인 경우 excel에 TIME =0 인
+부분에 0으로 기입되어 있으면 관찰값으로 인정하고 MDV를 0으로 처리
+
+Dosing이 서로 다를 경우 나중에 VPC 그리기 편하기 하게 위해서 Dosing
+column을 만들어서 처리
+
+CTL FILE
+
+NONMEM을 수행하기 위해서는 NM TRAN에 Data File과 CTL File이 필요
+NONMEM은 이 두가지 파일을 가지고 Modeling를 수행하게 되고 최종 결과물로
+parameter 값들과 .out File을 생성 ADVAN, OMEGA, THETA, SIGMA 등등의
+값들을 결정하게 됨
+
+ADVAN
+
+ADVAN을 설정하는 것에 있어서 compartment를 먼저 결정해야 되는데 먼저
+data file에서 시간 -- 농도 그래프를 그려서 compartment의 개수를 설정
+
+-\textgreater{} 몇몇의 ID가 다수의 ID와 다르게 compartment 개수가 많게
+되면 compartment 개수는 compartment 수가 많은 것을 택함
+
+Initial Estimate(IE) 초기값의 설정
+
+초기값을 잘 설정함으로써 NONMEM이 Estimation의 횟수(iteration)를 줄이게
+됨으로써 반복되는 계산 횟수를 줄여 수행 시간이 단축
+
+-\textgreater{} 초기값은 NCA 분석하듯이 미리 값(AUC, CL)을 도출해보고
+초기값을 설정
+
+-\textgreater{} 초기값을 잘 설정하지 않으면 ERROR가 나오거나 Out of
+boundary로 제대로 된 값이 나오지 않을 수가 있음
+
+\$OMEGA의 처리
+
+행렬로 표현
+
+\begin{figure}
+\centering
+\includegraphics{media/cf6501f83dc79c8737bd55f222da8b6b.png}
+\caption{텍스트, 스크린샷, 폰트이(가) 표시된 사진 자동 생성된 설명}
+\end{figure}
+
+\$OMEGA \$OMEGA DIAGONAL(2)
+
+0.01 0.01
+
+0.2 0.2
+
+-\textgreater{} 두개는 서로 같은 표현을 의미: η1, η2 간의 covariance를
+0이라고 가정 = 서로 상관관계가 존재하지 않고 독립적인 관계
+
+DIAGONAL은 서로 대각선 방향에 있는 수를 제외한 행렬의 나머지 부분를
+``0''으로 처리
+
+\$OMEGA BLOCK(2)
+
+0.01
+
+0.04 0.2
+
+-\textgreater{} OMEGA BLOCK η1, η2 간의 covariance를 0.04로 가정
+
+Validation
+
+Goodness of Fit
+
+OFV인 L값이 정규분포 식들이
+
+보통 그래프로 표현하거나 R2와 같은 결정계수(Coefficient of
+determination)으로 표현
+
+카이제곱검정을 이용해서 Model를 validation함
+
+수집한 데이터의 variance가 과연 우연인지 아니면 내가 test한 variable에
+의한 것인지를 판정하기 위해 사용
+
+\begin{figure}
+\centering
+\includegraphics{media/fcc8230c2ddfc64a7503dbf0cc69cb20.png}
+\caption{폰트, 스크린샷, 라인, 번호이(가) 표시된 사진 자동 생성된 설명}
+\end{figure}
+
+카이제곱 = 합을 할 건데 (관찰 -- 예측)\^{}2/ 예측
+
+Null hypothesis : 관찰 -- 예측된 값이 서로 통계적으로 무의미
+
+-\textgreater{} 카이제곱검정은 위의 hypothesis를 기각할지 용인할지를
+정량적으로 계산해줌
+
+자유도는 나올 수 있는 결과값이 n개이면 n-1으로 결정
+
+카이제곱 table에서 자유도의 차이는 비교하려는 두 모델간의 parameter
+개수의 차이를 의미
+
+-\textgreater{} 반드시 nested model( = 같은 모델이라고 생각하자) 사이의
+비교를 해야함
+
+\textbf{ex) 단순히 2-comp, 3-comp 간의 OFV 값을 보고 낮은 model이
+적합하다고 생각하지 말아야함}
+
+Critical value는 0.05만을 사용 -\textgreater{} 기각을 하든 용인을 하든
+신뢰도가 95\%를 의미
+
+-3.84이상이 되면 hypothesis를 기각하므로 prediction값이 통계적으로
+유의미
+
+PK -PD Modeling
+
+PD를 PK와 어떻게 연결을 할 것인지(SIM, PPP PPP\&D, IPP)
+
+PD에 지연이 있는지
+
+PD는 무슨 모델이 있는지
+
+-\textgreater{} 다음과 같은 3가지를 어떻게 처리를 할 것인지를 확인
+
+\end{document}
