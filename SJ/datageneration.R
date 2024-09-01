@@ -1,0 +1,56 @@
+library(tidyverse)
+
+raw_data  <- read_csv("SJ/rawdata/복사본 ★ S24008_Final Resul_보고서용_240527.csv", skip=2) |> 
+  fill(c(Group, `Sampling date`), .direction = "down")
+
+
+tidy <- raw_data |> 
+  filter(Group %in% c("G3", "G4", "G9", "G10", "G11")) |> 
+  select(1,2,3,7,12) |> 
+  rename("ID" = `Animal ID`,"Left" = "...7", "Right" = "...12") |> 
+  mutate(SITE = c(
+    rep("Aqueous humor", each = 50), rep("Vitreous humor", each = 50), rep("Iris", each = 50), 
+    rep("Retina", each = 50),rep("Choroid",each = 50),rep("Optic Nerve", each = 50),rep("Serum", each = 50)
+  )) |> 
+  separate_wider_delim(`Sampling date`,delim = " ", names = c("Date", "Time")) |>
+  separate(Group, into = c("Remove", "Group"), sep = 1) |> 
+  select(ID, Time, Left, Right, SITE, Group) |> 
+  mutate(ID = str_replace_all(ID, c("1A"= "110", "1B"="111")),
+         Time = as.double(Time),
+         Time = (Time-1)*24
+         ) |> 
+  pivot_longer(cols = c("Left", "Right"), names_to = "EYE", values_to = "DV") |> 
+  fill(DV, .direction = "down") |> 
+  select(1,2,6,3,4,5) |>     #VH 1  Retina 2 Optic Nerve 3 Serum 4  AH 5 Choroid 6 Iris 7
+  mutate(CMT = case_when(
+    SITE == "Vitreous humor" ~  1,
+    SITE == "Retina" ~  2,
+    SITE == "Optic Nerve" ~  3,
+    SITE == "Serum" ~  4,
+    SITE == "Aqueous humor" ~  5,
+    SITE == "Choroid" ~  6,
+    SITE == "Iris" ~  7
+  ),
+  EYE = ifelse(EYE == "Left", 1,2),   #Left 1, Right2
+  MDV = 0,
+  mutate(across(-SITE, as.double))
+  ) |> 
+  select(ID, TIME = Time, DV, MDV, CMT, Group, SITE, EYE)
+
+IDD <- tidy |> 
+  distinct(ID)
+
+dosing <- tidy |> 
+  distinct(ID, EYE, .keep_all = TRUE) |> 
+  mutate(TIME = 0, 
+         DV = NA,
+         MDV = 1,
+         CMT = 1,
+         SITE = "Vitreous humor")
+  
+
+bind_rows(tidy, dosing) |> 
+  arrange(ID, TIME,EYE) |> 
+  mutate(DV = ifelse(is.na(DV) & TIME > 0, 0, 
+                     ifelse(is.na(DV) & TIME == 0, ".", DV))) |> 
+  write.csv("SJ/eye.csv")
