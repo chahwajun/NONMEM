@@ -1,5 +1,7 @@
 library(tidyverse)
 
+
+#data generation ----
 raw_data  <- read_csv("SJ/rawdata/복사본 ★ S24008_Final Resul_보고서용_240527.csv", skip=2) |> 
   fill(c(Group, `Sampling date`), .direction = "down")
 
@@ -54,3 +56,33 @@ bind_rows(tidy, dosing) |>
   mutate(DV = ifelse(is.na(DV) & TIME > 0, 0, 
                      ifelse(is.na(DV) & TIME == 0, ".", DV))) |> 
   write.csv("SJ/eye.csv")
+
+
+
+
+
+
+# paired t-test ----
+
+dataframe <- read_csv("SJ/eye.csv") |> 
+  filter(MDV == 0) |> 
+  mutate(DV = as.double(DV))
+
+t.test(dataframe$DV[dataframe$EYE == 1], dataframe$DV[dataframe$EYE == 2], paired = TRUE)
+
+
+
+#Plot ----
+
+dataframe <- read_csv("SJ/eye.csv") |> 
+  filter(MDV == 0) |> 
+  mutate(DV = as.double(DV))
+
+dataframe |> 
+  mutate(ID = as.factor(ID),
+         Group = as.factor(Group)) |> 
+  ggplot() + geom_line(aes(x = TIME, y = DV,group = CMT,color = Group)) + facet_grid(SITE~EYE)
+
+
+
+
