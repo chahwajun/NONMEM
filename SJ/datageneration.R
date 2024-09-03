@@ -2,7 +2,7 @@ library(tidyverse)
 
 
 #data generation ----
-raw_data  <- read_csv("SJ/rawdata/복사본 ★ S24008_Final Resul_보고서용_240527.csv", skip=2) |> 
+raw_data  <- read_csv("SJ/rawdata/복사본 ★ S24008_Final Resul_보고서용_240527.csv", skip=1) |> 
   fill(c(Group, `Sampling date`), .direction = "down")
 
 
@@ -35,27 +35,30 @@ tidy <- raw_data |>
   ),
   EYE = ifelse(EYE == "Left", 1,2),   #Left 1, Right2
   MDV = 0,
-  mutate(across(-SITE, as.double))
+  mutate(across(-SITE, as.double),
+         AMT = ".")
   ) |> 
-  select(ID, TIME = Time, DV, MDV, CMT, Group, SITE, EYE)
+  select(ID, TIME = Time,AMT, DV, MDV, CMT, Group, SITE, EYE)
 
 IDD <- tidy |> 
   distinct(ID)
 
 dosing <- tidy |> 
   distinct(ID, EYE, .keep_all = TRUE) |> 
-  mutate(TIME = 0, 
+  mutate(TIME = 0,
+         AMT = rep(c(3,10,10,0.6, 1.2), each=20),
          DV = NA,
          MDV = 1,
          CMT = 1,
-         SITE = "Vitreous humor")
+         SITE = "Vitreous humor",
+         AMT = as.character(AMT))
   
 
 bind_rows(tidy, dosing) |> 
   arrange(ID, TIME,EYE) |> 
   mutate(DV = ifelse(is.na(DV) & TIME > 0, 0, 
                      ifelse(is.na(DV) & TIME == 0, ".", DV))) |> 
-  write.csv("SJ/eye.csv")
+  write_csv("SJ/eye_edit.csv", na = ".")
 
 
 
