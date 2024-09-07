@@ -89,3 +89,25 @@ dataframe |>
 
 
 
+
+
+#GEF calculation ----
+
+library(NonCompart)
+
+#Rabbit의 경우 1*10^8vg를 1이라고 가정 하고 계산 
+`3vg` <- read_csv("SJ/eye_edit.csv") |> 
+  filter(Group == 3 & MDV ==0) |> 
+  mutate(DV = ifelse(DV ==".", 0, as.double(DV))
+         ) 
+
+`10vg` <- read_csv("SJ/eye_edit.csv") |> 
+  filter(Group == 4) |> 
+  mutate(DV = ifelse(DV =="."))
+
+
+tblNCA(concData = `3vg`, key = c("ID","EYE"),colTime = "TIME", colConc = "DV", dose = 3, adm = "Bolus",doseUnit = "vg",timeUnit = "h", concUnit = "ng/mL",  R2ADJ = -1)
+
+
+`3vg` |> 
+  View()
