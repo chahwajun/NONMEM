@@ -4,9 +4,10 @@ library(tidyverse)
 #data generation ----
 raw_data1  <- read_csv("SJ/rawdata/복사본 ★ S24008_Final Resul_보고서용_240527.csv", skip=1) |> 
   fill(c(Group, `Sampling date`), .direction = "down")
-raw_data2 <- read_csv("SJ/rawdata/G001_Ocular PK 분석결과_(16주차)_2024.06.24 (공유본).csv")
-raw_data3　<- read_csv("SJ/rawdata/S24006_Ocular PK 분석결과_(24주차)_2024.08.19_SB정리(공유용).csv")
-  
+raw_data2 <- read_csv("SJ/rawdata/G001_Ocular PK 분석결과_(16주차)_2024.06.24 (공유본).csv", skip = 2)
+raw_data3　<- read_csv("SJ/rawdata/S24006_Ocular PK 분석결과_(24주차)_2024.08.19_SB정리(공유용).csv", skip = 2)
+
+###########################################################################################################################    
 tidy1 <- raw_data1 |> 
   filter(Group %in% c("G1","G2","G3", "G4","G5","G6","G7","G8", "G9", "G10", "G11")) |> 
   select(1,2,3,7,12) |> 
@@ -55,32 +56,95 @@ tidy1 <- raw_data1 |>
   arrange(ID) |> 
   ungroup()
 
+tidy1 |> 
+  write_csv("SJ/eye1.csv")
+###########################################################################################################################    
+tidy2 <- raw_data2 |> 
+  select(2,3,5,6,13) |> 
+  fill(c(`Animal ID`, Tissue, `Sampling\npoint`), .direction = "down") |> 
+  filter(`Animal ID` %in% c(1101,1102,1103,1201,1202,1203,1301,1302,1303)) 
+colnames(tidy2) <- c("ID", "TIME", "CMT", "LEFT", "DV")
 
-tidy2 <- raw_data2
-# IDD <- tidy |> 
-#   distinct(ID)
-# 
-# dosing <- tidy |> 
-#   distinct(ID, EYE, .keep_all = TRUE) |> 
-#   mutate(TIME = 0,
-#          AMT = rep(c(3,10,10,0.6, 1.2), each=20),
-#          DV = NA,
-#          MDV = 1,
-#          CMT = 1,
-#          SITE = "Vitreous humor",
-#          AMT = as.character(AMT))
-#   
-# 
-# bind_rows(tidy, dosing) |> 
-#   arrange(ID, TIME,EYE) |> 
-#   mutate(DV = ifelse(is.na(DV) & TIME > 0, 0, 
-#                      ifelse(is.na(DV) & TIME == 0, ".", DV))) |> 
-#   write_csv("SJ/eye_edit.csv", na = ".")
+tidy2 <- tidy2 |> 
+  mutate(CMT = case_when(
+    CMT == "Vitreous" ~  2,
+    CMT == "Retina" ~  4,
+    CMT == "Optic nerve" ~  6,
+    CMT == "Serum" ~  7,
+    CMT == "Aqueous" ~  1,
+    CMT == "Choroid" ~  5,
+    CMT == "Iris" ~  3
+  ),
+  DV = as.double(gsub(",", "", DV)), 
+  MDV = ifelse(is.na(DV), 1, 0),
+  Group = case_when(
+    ID %in% c(1101:1103) ~ "G3",
+    ID %in% c(1201:1203) ~ "G4",
+    ID %in% c(1301:1303) ~ "G9"
+  ),
+  LEFT = case_when(
+    LEFT =="Left" ~ 1,
+    LEFT == "Right" ~ 0,
+    LEFT == "-" ~ 2
+  )
+  ) |> 
+  separate(TIME, into=c("TIME", "WEEK"),sep = 1) 
 
+tidy2 <- tidy2 |> 
+  mutate(WEEK = 113,
+         DAY  = 113, 
+         TIME = (WEEK-1)*24,
+         WEEK = (DAY-1)/7,
+         DRUG = ifelse(ID %in% c(1301:1303),3,1),
+         BLQ = 5
+  ) |> 
+  select(ID,TIME, DV, MDV, GROUP=Group, LEFT, CMT, DRUG, DAY, WEEK, BLQ )
 
+tidy2 |> 
+  write_csv("SJ/eye2.csv", na = "")
 
+###########################################################################################################################    
 
+tidy3 <- raw_data3 |> 
+select(2,3,5,6,13)
+colnames(tidy3) <- c("ID", "TIME", "CMT", "LEFT", "DV") 
 
+tidy3 <- tidy3 |> 
+  fill(c("ID", "TIME","CMT"), .direction = "down") |> 
+filter(ID %in% c(1104,1105,1106,1204,1205,1206,1304,1305,1306)) |> 
+  mutate(CMT = case_when(
+    CMT == "Vitreous" ~  2,
+    CMT == "Retina" ~  4,
+    CMT == "Optic nerve" ~  6,
+    CMT == "Serum" ~  7,
+    CMT == "Aqueous" ~  1,
+    CMT == "Choroid" ~  5,
+    CMT == "Iris" ~  3
+  ),
+  DV = as.double(gsub(",", "", DV)), 
+  MDV = ifelse(is.na(DV), 1, 0),
+  GROUP = case_when(
+    ID %in% c(1104:1106) ~ "G3",
+    ID %in% c(1204:1206) ~ "G4",
+    ID %in% c(1304:1306) ~ "G9"
+  ),
+  LEFT = case_when(
+    LEFT =="Left" ~ 1,
+    LEFT == "Right" ~ 0,
+    LEFT == "-" ~ 2
+  )
+  ) |> 
+  separate(TIME, into = c("ABC", "DAY"),sep = 1) 
+tidy3 <- tidy3 |> 
+  mutate(DAY = as.double(DAY),
+         WEEK = (DAY-1)/7,
+         TIME = (DAY-1)*24,
+         DRUG = ifelse(ID %in%c(1304:1306),3,1),
+         BLQ = 5
+           ) |> 
+  select(ID,TIME, DV, MDV, GROUP, LEFT, CMT, DRUG, DAY, WEEK, BLQ )
+tidy3 |> 
+  write_csv("SJ/eye3.csv", na = "")
 
 # paired t-test ----
 
@@ -105,6 +169,10 @@ dataframe |>
 
 
 
+###########################################################################################################################  
+eye1 <- read_csv("SJ/eye1.csv")
+eye2 <- read_csv("SJ/eye2.csv")
+eye3 <- read_csv("SJ/eye3.csv")
 
 
 
