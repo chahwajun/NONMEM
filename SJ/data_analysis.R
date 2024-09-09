@@ -174,7 +174,13 @@ eye1 <- read_csv("SJ/eye1.csv")
 eye2 <- read_csv("SJ/eye2.csv")
 eye3 <- read_csv("SJ/eye3.csv")
 
-
+eye23 <- bind_rows(eye2, eye3) |> 
+  mutate(ID = ID+1000) |> 
+  group_by(ID) |> 
+  arrange(ID, TIME) |> 
+  mutate(ID = as.character(ID))
+bind_rows(eye1, eye23) |> 
+  write_csv("SJ/eye_full.csv")
 
 #GEF calculation ----
 
