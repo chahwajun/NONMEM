@@ -56,6 +56,8 @@ tidy1 <- raw_data1 |>
   arrange(ID) |> 
   ungroup()
 
+tidy1 <- tidy1 |> 
+  mutate(MDV = ifelse(is.na(DV),1,0 ))
 tidy1 |> 
   write_csv("SJ/eye1.csv")
 ###########################################################################################################################    
@@ -146,6 +148,24 @@ tidy3 <- tidy3 |>
 tidy3 |> 
   write_csv("SJ/eye3.csv", na = "")
 
+
+###########################################################################################################################  
+eye1 <- read_csv("SJ/HJ_data/eye1.csv")
+eye2 <- read_csv("SJ/HJ_data/eye2.csv")
+eye3 <- read_csv("SJ/HJ_data/eye3.csv")
+
+eye23 <- bind_rows(eye2, eye3) |> 
+#  mutate(ID = ID+1000) |> 
+  group_by(ID) |> 
+  arrange(ID, TIME) |> 
+  mutate(ID = as.character(ID))
+bind_rows(eye1, eye23) |> 
+  write_csv("SJ/HJ_data/eye_full2.csv", na = "")
+
+
+data <- read_csv("SJ/eye_full.csv")
+data |>
+  View()
 # paired t-test ----
 
 dataframe <- read_csv("SJ/eye.csv") |> 
@@ -169,18 +189,7 @@ dataframe |>
 
 
 
-###########################################################################################################################  
-eye1 <- read_csv("SJ/eye1.csv")
-eye2 <- read_csv("SJ/eye2.csv")
-eye3 <- read_csv("SJ/eye3.csv")
 
-eye23 <- bind_rows(eye2, eye3) |> 
-  mutate(ID = ID+1000) |> 
-  group_by(ID) |> 
-  arrange(ID, TIME) |> 
-  mutate(ID = as.character(ID))
-bind_rows(eye1, eye23) |> 
-  write_csv("SJ/eye_full.csv")
 
 #GEF calculation ----
 
