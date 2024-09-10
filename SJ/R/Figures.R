@@ -302,35 +302,89 @@ plot8week <- dataraw |>
 # G2
 plot8week2 <- plot8week |> 
   group_by(SITE) |> 
-  summarise(MEAN = mean(conc))
+  summarise(MEAN = mean(conc)) |> 
+  mutate(`Group_Eye` = "Mean Concentration")
+
 
 ggplot() + 
-  stat_summary(data = plot8week2, aes(x = SITE, y = MEAN), fun = mean,  
-               geom = "errorbar", fun.min = mean, fun.max = mean, width = 0.3, color = "darkgreen") +
-  geom_point(data = plot8week, aes(x = SITE, y = conc, shape = Group_Eye, color = Group_Eye, fill = Eye), size = 3) + 
+  stat_summary(data = plot8week2, aes(x = SITE, y = MEAN, , shape = Group_Eye, color = Group_Eye, fill = Group_Eye), fun = mean,  
+               geom = "errorbar", fun.min = mean, fun.max = mean, width = 0.3) +
+  geom_point(data = plot8week, aes(x = SITE, y = conc, shape = Group_Eye, color = Group_Eye, fill = Group_Eye), size = 3) + 
   theme_bw() + 
-  labs(x = NULL, y = "Aflibercept (ng/mL)", color = "Group and Eye", shape = "Group and Eye", fill = "Eye") + 
+  labs(x = NULL, y = "Aflibercept (ng/mL)", shape = "GROUP", color = "GROUP", fill = "GROUP") + 
+  
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 12, face = "bold"),
         axis.text.y = element_text(vjust = 0.5, size = 12, face = "bold"),
-        axis.title = element_text(size = 14)) +
+        axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0))
+        ) +
   
-  # Group_Eye에 따른 외곽선 색 설정
-  scale_color_manual(values = c("G2 OS" = "deeppink2", "G2 OD" = "deeppink2", 
-                                "G3 OS" = "azure4", "G3 OD" = "azure4",
+  scale_color_manual(values = c("Mean Concentration" = "darkgreen", 
+                                "G2 OS" = "deeppink2", "G2 OD" = "deeppink2", 
+                                "G3 OS" = "black", "G3 OD" = "black",
                                 "G4 OS" = "blue3", "G4 OD" = "blue3",
                                 "G5 OS" = "brown2", "G5 OD" = "brown2",
                                 "G6 OS" = "darkgoldenrod1", "G6 OD" = "darkgoldenrod1",
-                                "G7 OS" = "darkseagreen", "G7 OD" = "darkseagreen")) +
+                                "G7 OS" = "cyan1", "G7 OD" = "cyan1")) +
   
-  # OS는 흰색으로, OD는 해당 색으로 채움
-  scale_fill_manual(values = c("OS" = "white", "OD" = "black")) +
+  # 채우기 색상 매뉴얼 설정
+  scale_fill_manual(values = c("Mean Concentration" = "darkgreen",
+                               "G2 OS" = "white", "G2 OD" = "deeppink2", 
+                               "G3 OS" = "white", "G3 OD" = "azure4",
+                               "G4 OS" = "white", "G4 OD" = "blue3",
+                               "G5 OS" = "white", "G5 OD" = "brown2",
+                               "G6 OS" = "white", "G6 OD" = "darkgoldenrod1",
+                               "G7 OS" = "white", "G7 OD" = "cyan1")) +
   
   # 모양 매뉴얼 설정
-  scale_shape_manual(values = c("G2 OS" = 21, "G2 OD" = 21,
-                                "G3 OS" = 23, "G3 OD" = 23,
-                                "G4 OS" = 25, "G4 OD" = 25,
-                                "G5 OS" = 3, "G5 OD" = 3,
-                                "G6 OS" = 2, "G6 OD" = 2,
-                                "G7 OS" = 1, "G7 OD" = 1))
+  scale_shape_manual(values = c("Mean Concentration" = 1,
+                                "G2 OS" = 0, "G2 OD" = 15,
+                                "G3 OS" = 1, "G3 OD" = 16,
+                                "G4 OS" = 2, "G4 OD" = 17,
+                                "G5 OS" = 5, "G5 OD" = 23,
+                                "G6 OS" = 6, "G6 OD" = 25,
+                                "G7 OS" = 1, "G7 OD" = 20))
 
 
+ggsave("SJ/Figure/8_week.png", dpi = 600, width =10, height = 8)
+
+
+# SERUM ----
+SERUM <- dataraw |> 
+  filter(SITE ==7) |> 
+  distinct(WEEK, .keep_all = TRUE) |> 
+  mutate(DV = 0, SITE = as.character(SITE))
+
+serum2 <- dataraw |> 
+  filter(SITE != 7 & MDV == 0 & !(GROUP %in% c("G9", "G10", "G11"))
+         ) |> 
+  group_by(WEEK,SITE) |> 
+  summarise(CONC = mean(DV)) |> 
+  ungroup() |> 
+  mutate(SITE = as.character(SITE))
+
+
+ggplot() + geom_line(data = serum2, aes(x = WEEK, y = CONC, group = SITE, color = SITE)) + 
+  geom_line(data = SERUM, aes(x = WEEK,y = DV, color = SITE ))  +
+  labs(x = NULL, y = "Aflibercept (ng/mL)") + 
+  theme_bw()+
+  theme(axis.text.x = element_text(vjust = 0.5, size = 12),
+        axis.text.y = element_text(vjust = 0.5, size = 12),
+        axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0))
+  ) + scale_x_continuous(breaks = seq(0,24,4))  +
+  scale_color_manual(values = c(
+    "1" = "antiquewhite4","2" = "coral2","3" = "chartreuse3","4" = "darkcyan",       
+    "5" = "darkorange","6" = "darkviolet","7" = "red"        
+  ),
+  labels = c("1"="Aqueous humor", "2" ="Vitreous humor", "3" = "Iris", "4" = "Retina",
+             "5" = "Choroid", "6" = "Optic nerve", "7"= "Serum")
+  )
+ggsave("SJ/Figure/SERUM.png", dpi = 600, width =10, height = 8)
+
+  #scale_linetype_manual(values = c("1" = "solid","2"= "solid", "3" = "solid",
+     #                                  "4"= "solid", "5"= "solid","6"= "solid" "7" = "dashed"))
+    
+    
+
+    
+
+    
