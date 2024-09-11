@@ -299,11 +299,11 @@ plot8week <- dataraw |>
          Group_Eye = paste(GROUP, Eye)
          )
   
-# G2
+# OS/OD 
 plot8week2 <- plot8week |> 
   group_by(SITE) |> 
   summarise(MEAN = mean(conc)) |> 
-  mutate(`Group_Eye` = "Mean Concentration")
+  mutate(`Group_Eye` = "Mean Concentration", GROUP = "Mean Concentration")
 
 
 ggplot() + 
@@ -315,7 +315,8 @@ ggplot() +
   
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 12, face = "bold"),
         axis.text.y = element_text(vjust = 0.5, size = 12, face = "bold"),
-        axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0))
+        axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+        legend.text = element_text(size = 10)
         ) +
   
   scale_color_manual(values = c("Mean Concentration" = "darkgreen", 
@@ -326,7 +327,6 @@ ggplot() +
                                 "G6 OS" = "darkgoldenrod1", "G6 OD" = "darkgoldenrod1",
                                 "G7 OS" = "cyan1", "G7 OD" = "cyan1")) +
   
-  # 채우기 색상 매뉴얼 설정
   scale_fill_manual(values = c("Mean Concentration" = "darkgreen",
                                "G2 OS" = "white", "G2 OD" = "deeppink2", 
                                "G3 OS" = "white", "G3 OD" = "azure4",
@@ -335,7 +335,6 @@ ggplot() +
                                "G6 OS" = "white", "G6 OD" = "darkgoldenrod1",
                                "G7 OS" = "white", "G7 OD" = "cyan1")) +
   
-  # 모양 매뉴얼 설정
   scale_shape_manual(values = c("Mean Concentration" = 1,
                                 "G2 OS" = 0, "G2 OD" = 15,
                                 "G3 OS" = 1, "G3 OD" = 16,
@@ -347,6 +346,54 @@ ggplot() +
 
 ggsave("SJ/Figure/8_week.png", dpi = 600, width =10, height = 8)
 
+
+#OU
+plot8week3 <- dataraw |> 
+  mutate(SITE = case_when(
+    SITE == 1 ~ "Aqueous humor",
+    SITE == 2 ~ "Vitreous humor",
+    SITE == 3 ~ "Iris",
+    SITE == 4 ~ "Retina",
+    SITE == 5 ~ "Choroid",
+    SITE == 6 ~ "Optic nerve"
+  )
+  ) |> 
+  filter(WEEK ==8 & MDV ==0) |> 
+  group_by(GROUP,SITE) |> 
+  summarise(conc = mean(DV)) |> 
+  ungroup() |> 
+  filter(GROUP != "G10" & GROUP != "G11" & GROUP != "G9")
+
+ggplot() + 
+  stat_summary(data = plot8week2, aes(x = SITE, y = MEAN, shape = GROUP, color = GROUP), fun = mean,  
+               geom = "errorbar", fun.min = mean, fun.max = mean, width = 0.3) +
+  geom_point(data = plot8week3, aes(x = SITE, y = conc,  shape = GROUP, color = GROUP), size = 3) + 
+  theme_bw() + 
+  labs(x = NULL, y = "Aflibercept (ng/mL)", shape = "GROUP", color = "GROUP") + 
+  
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, size = 12, face = "bold"),
+        axis.text.y = element_text(vjust = 0.5, size = 12, face = "bold"),
+        axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+        legend.text = element_text(size = 10)
+  ) +
+  scale_color_manual(values = c("Mean Concentration" = "darkgreen", 
+                                "G2" = "deeppink2",  
+                                "G3" = "black", 
+                                "G4" = "blue3", 
+                                "G5" = "brown2", 
+                                "G6" = "darkgoldenrod1",
+                                "G7" = "cyan1")) +
+  
+  scale_shape_manual(values = c("Mean Concentration" = 1,
+                                "G2" = 0, 
+                                "G3" = 1, 
+                                "G4" = 2, 
+                                "G5" = 5, 
+                                "G6" = 6, 
+                                "G7" = 1 )
+                     )
+
+ggsave("SJ/Figure/8_week_OU.png", dpi = 600, width =10, height = 8)
 
 # SERUM ----
 SERUM <- dataraw |> 
@@ -364,13 +411,18 @@ serum2 <- dataraw |>
 
 
 ggplot() + geom_line(data = serum2, aes(x = WEEK, y = CONC, group = SITE, color = SITE)) + 
+  geom_point(data = serum2, aes(x = WEEK, y = CONC, group = SITE, color = SITE)) + 
   geom_line(data = SERUM, aes(x = WEEK,y = DV, color = SITE ))  +
-  labs(x = NULL, y = "Aflibercept (ng/mL)") + 
+  labs(x = "Time (WEEK)", y = "Aflibercept (ng/mL)") + 
   theme_bw()+
   theme(axis.text.x = element_text(vjust = 0.5, size = 12),
         axis.text.y = element_text(vjust = 0.5, size = 12),
-        axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0))
-  ) + scale_x_continuous(breaks = seq(0,24,4))  +
+        axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+        axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12)
+  ) + 
+  scale_x_continuous(breaks = seq(0,24,4))  +
   scale_color_manual(values = c(
     "1" = "antiquewhite4","2" = "coral2","3" = "chartreuse3","4" = "darkcyan",       
     "5" = "darkorange","6" = "darkviolet","7" = "red"        
@@ -378,6 +430,7 @@ ggplot() + geom_line(data = serum2, aes(x = WEEK, y = CONC, group = SITE, color 
   labels = c("1"="Aqueous humor", "2" ="Vitreous humor", "3" = "Iris", "4" = "Retina",
              "5" = "Choroid", "6" = "Optic nerve", "7"= "Serum")
   )
+
 ggsave("SJ/Figure/SERUM.png", dpi = 600, width =10, height = 8)
 
   #scale_linetype_manual(values = c("1" = "solid","2"= "solid", "3" = "solid",
@@ -388,3 +441,39 @@ ggsave("SJ/Figure/SERUM.png", dpi = 600, width =10, height = 8)
     
 
     
+
+
+# DOSE proportionality ----
+prop <- dataraw |> 
+  filter(!(GROUP %in% c("G9", "G10", "G11", "G1")) & MDV == 0
+         ) |>  
+  group_by(GROUP, SITE, WEEK) |> 
+  summarize(CONC = mean(DV))
+
+dose_prop <- function(site_number){
+a <-   prop |> 
+    filter(SITE == site_number) |> 
+ ggplot() + geom_line( aes(x = WEEK, y = CONC, group= GROUP,color = GROUP)) + 
+  geom_point( aes(x = WEEK, y = CONC, group= GROUP,color = GROUP)) + 
+  labs(x = "Time (WEEK)", y = "Aflibercept (ng/mL)", color = "GROUP") + 
+  theme_bw()+
+  theme(axis.text.x = element_text( vjust = 0.5, size = 12),
+        axis.text.y = element_text(vjust = 0.5, size = 12),
+        axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 10, b = 0, l = 0)),
+        axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12)
+  ) +
+  scale_color_manual(values = c("G2" = "deeppink2",  
+                                "G3" = "black", 
+                                "G4" = "blue3", 
+                                "G5" = "brown2", 
+                                "G6" = "darkgoldenrod1",
+                                "G7" = "darkmagenta",
+                                "G8" = "darkslategray3")
+                     )
+  
+print(a)
+}
+dose_prop(6)
+ggsave("SJ/Figure/dose_prop6.png", dpi = 600, width = 10, height = 6)

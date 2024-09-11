@@ -1,7 +1,7 @@
 library(tidyverse)
 
 data_raw <- read_csv("SJ/rawdata/K24027-qPCR AAV DNA result (2-8주차).csv", skip=2) |> 
-  mutate(`Group/Dose (vg/animal)` = ifelse(is.na(`Time\npoint`), NA,`Group/Dose (vg/animal)`))
+  mutate(`Group/Dose (vg/animal)` = ifelse(is.na(`Time\r\npoint`), NA,`Group/Dose (vg/animal)`))
 
 
 data_raw <- data_raw |>
@@ -30,13 +30,17 @@ tidy_pcr <-  data_raw |>
   select(ID, DAY, DV, MDV, GROUP,SITE, LEFT) |>
   group_by(GROUP) |> 
   arrange(ID, DAY) |>
+  ungroup() |> 
   filter(GROUP !="G9") |> 
   mutate(DRUG = ifelse(GROUP =="G1", 4,1),
          DAY = as.double(DAY),
          TIME = ifelse(DAY==0, 0,(DAY-1)*24),
          WEEK = ifelse(DAY ==0 ,0,(DAY-1)/7),
-          BLQ =0
+          BLQ =0,
+         ROW = row_number()
          ) |> 
-  select(ID, TIME, DV, MDV, GROUP, SITE, DRUG, DAY, WEEK, BLQ)
+  select(ID, TIME, DV, MDV, GROUP, LEFT, SITE, DRUG, DAY, WEEK, BLQ, ROW)
+tidy_pcr |> 
+  write_csv("SJ/HJ_data/eye_pcr.csv")
 
 # SITE (1:aq, 2:vit, 3:iris, 4:retina, 5:choroid, 6:optic nerve, 7:serum)
