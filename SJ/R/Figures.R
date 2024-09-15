@@ -1,7 +1,7 @@
 library(tidyverse)
 
 
-dataraw <- read_csv("SJ/HJ_data/eye_full2.csv", col_types = "c") |> 
+dataraw <- read_csv("SJ/rawdata/FN_240830_Total dataset.csv", col_types = "c") |> 
   mutate(ID = as.character(ID))
 # SITE (1:aq, 2:vit, 3:iris, 4:retina, 5:choroid, 6:optic nerve, 7:serum)
 ########################################################################################################
@@ -396,84 +396,127 @@ ggplot() +
 ggsave("SJ/Figure/8_week_OU.png", dpi = 600, width =10, height = 8)
 
 # SERUM ----
-SERUM <- dataraw |> 
-  filter(SITE ==7) |> 
-  distinct(WEEK, .keep_all = TRUE) |> 
-  mutate(DV = 0, SITE = as.character(SITE))
-
-serum2 <- dataraw |> 
-  filter(SITE != 7 & MDV == 0 & !(GROUP %in% c("G9", "G10", "G11"))
-         ) |> 
-  group_by(WEEK,SITE) |> 
-  summarise(CONC = mean(DV)) |> 
-  ungroup() |> 
-  mutate(SITE = as.character(SITE))
+prop <- dataraw |> 
+  filter(MDV ==0)
 
 
-ggplot() + geom_line(data = serum2, aes(x = WEEK, y = CONC, group = SITE, color = SITE)) + 
-  geom_point(data = serum2, aes(x = WEEK, y = CONC, group = SITE, color = SITE)) + 
-  geom_line(data = SERUM, aes(x = WEEK,y = DV, color = SITE ))  +
-  labs(x = "Time (WEEK)", y = "Aflibercept (ng/mL)") + 
-  theme_bw()+
+aflibercept_dose_prop <- prop |> 
+  filter(GROUP %in% c("G10", "G11") & SITE ==7) |> 
+  group_by(WEEK, GROUP) |> 
+  summarise(CONC = mean(DV), sd = sd(DV))
+
+gene <- dataraw |> 
+  filter(!(GROUP %in% c("G10", "G11","G1", "G9")) & SITE ==7
+  ) |> 
+  group_by(WEEK, GROUP) |> 
+  summarise(CONC = mean(DV), sd = sd(DV)) |> 
+  mutate(CONC = 0, sd = 0)
+
+ggplot() + 
+  geom_line(data = aflibercept_dose_prop, aes(x = WEEK, y = CONC, group = GROUP, color = GROUP, linetype = GROUP)) +
+  geom_point(data = aflibercept_dose_prop, aes(x = WEEK, y = CONC, group = GROUP, color = GROUP)) +
+  geom_errorbar(data = aflibercept_dose_prop, aes(x = WEEK, ymin = CONC - sd, ymax = CONC + sd, color = GROUP), width = 0.1) +
+  geom_line(data = gene, aes(x = WEEK, y = CONC, group = GROUP, color = GROUP, linetype = GROUP)) +
+  geom_point(data = gene, aes(x = WEEK, y = CONC, group = GROUP, color = GROUP)) +
+  theme_bw() + 
   theme(axis.text.x = element_text(vjust = 0.5, size = 12),
         axis.text.y = element_text(vjust = 0.5, size = 12),
         axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
         axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
         legend.title = element_text(size = 12),
-        strip.text = element_text(size = 12)
-  ) + 
-  scale_x_continuous(breaks = seq(0,24,4))  +
-  scale_color_manual(values = c(
-    "1" = "antiquewhite4","2" = "coral2","3" = "chartreuse3","4" = "darkcyan",       
-    "5" = "darkorange","6" = "darkviolet","7" = "red"        
+        strip.text = element_text(size = 12)) + 
+  scale_color_manual(values = c("G2"= "deeppink2","G3"= "black", "G4"="blue3", "G5"= "brown2","G6"="darkgoldenrod1","G7"=  "cyan1",
+                                "G8"= "azure4", "G10" = "aquamarine3", "G11" = "darkorange1"), 
+                     labels = c("G2"= "AAV2-G001 AIO 1.0*10^8 vg", "G3" = "AAV2-G001 AIO 3.0*10^8 vg","G4" = "AAV2-G001 AIO 1.0*10^9 vg",
+                                "G5" = "AAV2-G001 AIO 3.0*10^9 vg", "G6" = "AAV2-G001 AIO 1.0*10^10 vg","G7" = "AAV2-G001 AIO 5.0*10^10 vg",
+                                "G8" = "AAV2-G001 AIO 2.5*10^11 vg","G10"="Aflibercept 0.6mg/eye","G11"= "Aflibercept 1.2mg/eye")) +
+  scale_linetype_manual(values = c("G2"="solid", "G3" = "solid","G4"="solid","G5"="solid","G6" = "solid",
+                                   "G7" ="solid", "G8" = "solid", "G10" = "dashed", "G11" = "dashed"), 
+                        labels = c("G2"= "AAV2-G001 AIO 1.0*10^8 vg", "G3" = "AAV2-G001 AIO 3.0*10^8 vg","G4" = "AAV2-G001 AIO 1.0*10^9 vg",
+                                   "G5" = "AAV2-G001 AIO 3.0*10^9 vg", "G6" = "AAV2-G001 AIO 1.0*10^10 vg","G7" = "AAV2-G001 AIO 5.0*10^10 vg",
+                                   "G8" = "AAV2-G001 AIO 2.5*10^11 vg","G10"="Aflibercept 0.6mg/eye","G11"= "Aflibercept 1.2mg/eye")) +
+  guides(color = guide_legend(override.aes = list(linetype = c("dashed", "dashed",rep("solid", times = 7)))))+
+  labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = "Drug", linetype="Drug", group = "Drug") +
+  scale_x_continuous(breaks = c(0,2,4,6,8,16,24))
+
+ggsave("SJ/Figure/serum_plot.png", dpi = 600, width = 10, height = 8)
+
+
+
+    
+
+#DOSE PROP ----
+
+propo <- dataraw |>
+  filter(!(GROUP %in% c("G10", "G11","G1", "G9"))
+         & WEEK == 8 & !is.na(DV)) |> 
+  group_by(GROUP, SITE) |> 
+  summarise(CONC = mean(DV), sd = sd(DV)) |> 
+  mutate(SITE = case_when(
+    SITE == 1 ~ "Aqueous humor",
+    SITE == 2 ~ "Vitreous humor",
+    SITE == 3 ~ "Iris",
+    SITE == 4 ~ "Retina",
+    SITE == 5 ~ "Choroid",
+    SITE == 6 ~ "Optic nerve"
   ),
-  labels = c("1"="Aqueous humor", "2" ="Vitreous humor", "3" = "Iris", "4" = "Retina",
-             "5" = "Choroid", "6" = "Optic nerve", "7"= "Serum")
+  GROUP = case_when(
+    GROUP =="G2" ~ "1.0*10^8",
+    GROUP == "G3" ~"3.0*10^8",
+    GROUP == "G4" ~ "1.0*10^9",
+    GROUP =="G5" ~ "3.0*10^9",
+    GROUP == "G6" ~ "1.0*10^10",
+    GROUP == "G7" ~ "5.0*10^10"
   )
 
-ggsave("SJ/Figure/SERUM.png", dpi = 600, width =10, height = 8)
-
-  #scale_linetype_manual(values = c("1" = "solid","2"= "solid", "3" = "solid",
-     #                                  "4"= "solid", "5"= "solid","6"= "solid" "7" = "dashed"))
-    
-    
-
-    
-
-    
-
-
-# DOSE proportionality ----
-prop <- dataraw |> 
-  filter(!(GROUP %in% c("G9", "G10", "G11", "G1")) & MDV == 0
-         ) |>  
-  group_by(GROUP, SITE, WEEK) |> 
-  summarize(CONC = mean(DV))
-
-dose_prop <- function(site_number){
-a <-   prop |> 
-    filter(SITE == site_number) |> 
- ggplot() + geom_line( aes(x = WEEK, y = CONC, group= GROUP,color = GROUP)) + 
-  geom_point( aes(x = WEEK, y = CONC, group= GROUP,color = GROUP)) + 
-  labs(x = "Time (WEEK)", y = "Aflibercept (ng/mL)", color = "GROUP") + 
-  theme_bw()+
-  theme(axis.text.x = element_text( vjust = 0.5, size = 12),
-        axis.text.y = element_text(vjust = 0.5, size = 12),
-        axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 10, b = 0, l = 0)),
-        axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
-        legend.title = element_text(size = 12),
-        strip.text = element_text(size = 12)
-  ) +
-  scale_color_manual(values = c("G2" = "deeppink2",  
-                                "G3" = "black", 
-                                "G4" = "blue3", 
-                                "G5" = "brown2", 
-                                "G6" = "darkgoldenrod1",
-                                "G7" = "darkmagenta",
-                                "G8" = "darkslategray3")
-                     )
-  
-print(a)
+         )
+          
+dose_prop <- function(site){
+  propo |> 
+    filter(SITE == site) |> 
+    ggplot() +
+    geom_point(aes(x = factor(GROUP, levels = c("1.0*10^8","3.0*10^8","1.0*10^9","3.0*10^9","1.0*10^10","5.0*10^10")), 
+                   y = CONC)) +
+    geom_line(aes(x = factor(GROUP, levels = c("1.0*10^8","3.0*10^8","1.0*10^9","3.0*10^9","1.0*10^10","5.0*10^10")), 
+                  y = CONC, group = 1)) +  
+    geom_errorbar(aes(x = factor(GROUP, levels = c("1.0*10^8","3.0*10^8","1.0*10^9","3.0*10^9","1.0*10^10","5.0*10^10")), 
+                      ymin = CONC - sd, ymax = CONC + sd), width = 0.1) +
+    theme_bw() + 
+    theme(axis.text.x = element_text(vjust = 0.5, size = 12),
+          axis.text.y = element_text(vjust = 0.5, size = 12),
+          axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+          axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+          legend.title = element_text(size = 12)
+    ) + labs(x = "AAV2-G001 AIO, vg/eye", y= "Aflibercept (ng/mL)")
 }
-dose_prop(6)
-ggsave("SJ/Figure/dose_prop6.png", dpi = 600, width = 10, height = 6)
+
+dose_prop("Aqueous humor")
+ggsave("SJ/Figure/dose_prop_aq.png", dpi = 600, width = 10, height =6)
+
+dose_prop("Vitreous humor")
+ggsave("SJ/Figure/dose_prop_Vit.png", dpi = 600, width = 10, height =6)
+
+dose_prop("Iris")
+ggsave("SJ/Figure/dose_prop_Iris.png", dpi = 600, width = 10, height =6)
+
+dose_prop("Retina")
+ggsave("SJ/Figure/dose_prop_Retina.png", dpi = 600, width = 10, height =6)
+
+dose_prop("Choroid")
+ggsave("SJ/Figure/dose_prop_Choroid.png", dpi = 600, width = 10, height =6)
+
+dose_prop("Optic nerve")
+ggsave("SJ/Figure/dose_prop_Optic nerve.png", dpi = 600, width = 10, height =6)
+
+
+
+
+
+
+
+ 
+
+
+
+
+
