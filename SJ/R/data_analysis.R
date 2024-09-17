@@ -148,11 +148,13 @@ tidy3 <- tidy3 |>
 tidy3 |> 
   write_csv("SJ/eye3.csv", na = "")
 
-
+  filter(MDV==0)
 ###########################################################################################################################  
 eye1 <- read_csv("SJ/HJ_data/eye1.csv")
-eye2 <- read_csv("SJ/HJ_data/eye2.csv")
-eye3 <- read_csv("SJ/HJ_data/eye3.csv")
+eye2 <- read_csv("SJ/HJ_data/eye2.csv") |> 
+  mutate(ID = ID+1000)
+eye3 <- read_csv("SJ/HJ_data/eye3.csv") |> 
+  mutate(ID = ID+1000)
 
 eye23 <- bind_rows(eye2, eye3) |> 
 #  mutate(ID = ID+1000) |> 
@@ -161,7 +163,6 @@ eye23 <- bind_rows(eye2, eye3) |>
   mutate(ID = as.character(ID))
 bind_rows(eye1, eye23) |> 
   write_csv("SJ/HJ_data/eye_full2.csv", na = "")
-
 
 data <- read_csv("SJ/eye_full.csv")
 data |>
@@ -373,3 +374,52 @@ ggplot() + geom_point(data = Ksyn,aes(x = log_weight, y = log_GEF, color=Group))
   geom_point(human, aes(x = Log_weight, y = Log_GEF))
 
 
+# SB NONMEM dataset ----
+SB_datset <- read_csv("SJ/rawdata/FN_240830_Total dataset.csv",col_types = "c") |> 
+  filter(GROUP %in% c("G10", "G11")) |> 
+  mutate(across(-c(1,5), as.double),
+         ID2 = ID
+         ) |> 
+  separate(ID, into = c("IDD", "ID"), sep = 2 ) |> 
+  mutate(ID = ifelse(IDD =="1B", as.double(ID)+100, as.double(ID))
+         ) |> 
+  filter(SITE ==2) |> 
+  mutate(ID = ifelse(LEFT ==1, ID, ID+10),
+         CMT = 1, AMT = NA) |> 
+  select(ID, TIME,DV, MDV, CMT,AMT, GROUP, LEFT, SITE, DAY, WEEK, ID2, IDD)
+
+
+dosing <- tibble(
+  ID = SB_datset$ID,
+  TIME = 0, 
+  DV = NA, 
+  MDV = 1,
+  CMT =1, 
+  AMT = rep(c(0.6,1.2), each = 20),
+  GROUP = rep(c("G10", "G11"), each=20),
+  LEFT = rep(c(0,1),each=1, times=20),
+  SITE =2, DAY = 0 , WEEK= 0 , ID2 = SB_datset$ID2, IDD = SB_datset$IDD
+)
+
+ bind_rows(SB_datset, dosing) |> 
+  group_by(ID) |> 
+  arrange(ID, TIME, IDD) |> 
+   write_csv("SJ/SB_NONMEM/SB.csv", na = ".")
+ 
+ # SB NCA
+ library(tidyverse)
+ library(NonCompart)
+ library(ncar)
+ SB_NCA <- read_csv("SJ/rawdata/FN_240830_Total dataset.csv",col_types = "c") |> 
+   filter(GROUP %in% c("G10", "G11")) |> 
+   mutate(across(-c(1,5), as.double),
+          ID2 = ID
+   ) |> 
+   filter(SITE ==2 & MDV==0) |> 
+   group_by(GROUP,TIME) |> 
+   summarise(CONC = mean(DV)) |> 
+   tblNCA(key = "GROUP", colTime = "TIME", colConc = "CONC", adm = "Bolus", dose = 0.6, doseUnit = "mg",timeUnit = "h",concUnit = "ng/mL",R2ADJ = -1)
+ 
+ pdfNCA("SJ/HJ_data/SB_NCA.pdf",SB_NCA,key = "GROUP", colTime = "TIME",
+        colConc = "CONC", adm = "Bolus", dose = 0.6, doseUnit = "mg",timeUnit = "h",concUnit = "ng/mL",R2ADJ = -1)
+ 

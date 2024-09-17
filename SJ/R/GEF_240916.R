@@ -44,7 +44,8 @@ GEF_result1 <- NCA_rabbit |>
          vg = c(1*10^8,3*10^8,1*10^9,3*10^9,1*10^10,5*10^10,2.5*10^11),
          GEF = `ksyn(mole/d)`/vg,
          WT = c(3.64,3.42,3.71,3.82,3.63,3.9,3.69)
-         )
+         ) |> 
+  as_tibble()
 
 GEF_result2 <- NCA_rabbit |> 
   mutate(AUCLST = c(22574.2,59020,67757.9,94699.3,148143.9,189694.3,159514.4),
@@ -57,7 +58,8 @@ GEF_result2 <- NCA_rabbit |>
          vg = c(1*10^8,3*10^8,1*10^9,3*10^9,1*10^10,5*10^10,2.5*10^11),
          GEF = `ksyn(mole/d)`/vg,
          WT = c(3.64,3.42,3.71,3.82,3.63,3.9,3.69)
-  )
+  ) |> 
+  as_tibble()
 
 
 
@@ -77,19 +79,67 @@ monkey_raw <- read_csv("SJ/rawdata/digitize/wpd_datasets.csv") |>
   mutate(Group = group_indices()) |> 
   ungroup()
 
-NCA_monkey <- monkey_raw |> 
+tidy_monkey<- monkey_raw |> 
   mutate(DV = as.double(DV),
          rounded_time = round(TIME, 0)
          ) |> 
   write_csv("SJ/GEF/monkey.csv")
 
-NCA_monkey <- read_csv("SJ/GEF/monkey.csv") 
+tidy_monkey <- read_csv("SJ/GEF/monkey.csv") 
 
-NCA_monkey |> 
+NCA_monkey <-  tidy_monkey |> 
   group_by(rounded_time,ID) |> 
-  summarize(time = mean(TIME), CONC = mean(DV))
-  
+  summarize(time = mean(TIME), CONC = mean(DV)) |> 
+  arrange(ID, time) |> 
+  mutate(time = time*30*24)
 
+pdfNCA("SJ/GEF/NCA_monkey.pdf", NCA_monkey, key ="ID", colTime = "time", colConc = "CONC",
+       dose = 50, adm = "bolus", doseUnit = "ug", timeUnit = "h",
+       concUnit ="ug/mL")
+
+CONC <- tidy_monkey |> 
+  group_by(rounded_time, ID) |> 
+  summarise(CONC = mean(DV)) |> 
+  filter(rounded_time %in% c(19,20))
+
+NCA_result_monkey <- tblNCA(NCA_monkey, key ="ID", colTime = "time", colConc = "CONC",
+                            dose = 50, adm = "bolus", doseUnit = "ug", timeUnit = "h",
+                            concUnit ="ug/mL") |> 
+  select(ID, AUCLST) |> 
+  mutate(DOSE = c(50,50,50,100),
+         vg = (2*10^(12)),
+         CL = DOSE/ AUCLST,
+         CONC = CONC$CONC*1000,
+         `ksyn(ng/d)`= CL*CONC*24,
+         `ksyn(nmol/d)`= `ksyn(ng/d)`/115000,
+         `ksyn(mol/d)`= `ksyn(nmol/d)`*10^(-9),
+         `ksyn(mole/d)` = `ksyn(mol/d)`*(6.02*10^(23)),
+         GEF = `ksyn(mole/d)`/vg,
+         WT = c(4,5,6,7)
+  ) |> 
+  as_tibble()
+
+
+GEF <- tibble(
+  ID = c(GEF_result2$ID, NCA_result_monkey$ID, "Human"),
+GEF = c(GEF_result2$GEF, NCA_result_monkey$GEF, NA)
+) |> 
+mutate(WT = c(GEF_result2$WT, NCA_result_monkey$WT,70),
+       logGEF = log10(GEF), logWT = log10(WT),
+       Animal = c(rep("Rabbit", times=7), rep("Monkey",times=4), "Human")
+       ) 
+
+result <-  lm(GEF$logGEF~GEF$logWT)
+summary(result)
+
+ggplot(GEF) + geom_point(aes(x = log10(WT), y = log10(GEF))) + theme_bw() +geom_abline(slope = -22.253, intercept = 16.788) +
+  theme(axis.text.x = element_text(vjust = 0.5, size = 12),
+        axis.text.y = element_text(vjust = 0.5, size = 12),
+        axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+        axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+        legend.title = element_text(size = 12),
+        strip.text = element_text(size = 12)) + 
+  labs(X = "Log(Weight)", y = "Log(GEF)") 
 
 
   

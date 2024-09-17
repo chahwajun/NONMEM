@@ -39,8 +39,16 @@ tidy_pcr <-  data_raw |>
           BLQ =0,
          ROW = row_number()
          ) |> 
-  select(ID, TIME, DV, MDV, GROUP, LEFT, SITE, DRUG, DAY, WEEK, BLQ, ROW)
+  select(ID, TIME, DV, MDV, GROUP, LEFT, SITE, DRUG, DAY, WEEK, BLQ, ROW) |> 
+  mutate(TYPE =2)
 tidy_pcr |> 
   write_csv("SJ/HJ_data/eye_pcr.csv")
 
 # SITE (1:aq, 2:vit, 3:iris, 4:retina, 5:choroid, 6:optic nerve, 7:serum)
+read_csv("SJ/rawdata/GC.csv") |> 
+  filter(MDV== 0 & DV !=floor(DV) )
+
+read_csv("SJ/rawdata/GC.csv") |> 
+  group_by(ID) |> 
+  arrange(ID,TIME) |> 
+  write_csv("SJ/rawdata/GC_edit.csv")
