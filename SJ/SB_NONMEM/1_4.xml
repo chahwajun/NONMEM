@@ -5,7 +5,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://namespaces.oreilly.com/xmlnut/address output.xsd"
 xmlns:nm="http://namespaces.oreilly.com/xmlnut/address"
 >
-<nm:start_datetime>2024-09-17T18:49:28.525</nm:start_datetime>
+<nm:start_datetime>2024-09-19T17:10:58.713</nm:start_datetime>
 <nm:control_stream><![CDATA[
 ;; 1. Based on: 1
 $PROBLEM SB vitreous
@@ -35,7 +35,7 @@ $ERROR
 $THETA
  (0,0.000004)      ; CL
  (0,0.0007)         ; V
- 10000  ; Additive Residual Variability
+ 1000  ; Additive Residual Variability
  0.000001 FIX        ; Proportional Residual Variability
 $OMEGA
 0 FIX
@@ -65,8 +65,8 @@ Note: Analytical 2nd Derivatives are constructed in FSUBS but are never used.
 <nm:license_information><![CDATA[
 License Registered to: AIMS BioScience Co
 Expiration Date:    14 MAY 2025
-Current Date:       17 SEP 2024
-Days until program expires : 242
+Current Date:       19 SEP 2024
+Days until program expires : 240
 ]]></nm:license_information>
 <nm:program_information><![CDATA[
 1NONLINEAR MIXED EFFECTS MODEL PROGRAM (NONMEM) VERSION 7.5.1
@@ -110,7 +110,7 @@ Days until program expires : 242
  LOWER BOUND    INITIAL EST    UPPER BOUND
   0.0000E+00     0.4000E-05     0.1000E+07
   0.0000E+00     0.7000E-03     0.1000E+07
- -0.1000E+07     0.1000E+05     0.1000E+07
+ -0.1000E+07     0.1000E+04     0.1000E+07
   0.1000E-05     0.1000E-05     0.1000E-05
 0INITIAL ESTIMATE OF OMEGA:
  0.0000E+00
@@ -231,7 +231,7 @@ Days until program expires : 242
 <nm:theta_in>
 <nm:val nm:name='1'>3.99999999999999982E-006</nm:val>
 <nm:val nm:name='2'>6.99999999999999993E-004</nm:val>
-<nm:val nm:name='3'>10000.000000000000</nm:val>
+<nm:val nm:name='3'>1000.0000000000000</nm:val>
 <nm:val nm:name='4'>9.99999999999999955E-007</nm:val>
 </nm:theta_in>
 <nm:theta_ub>
@@ -296,16 +296,18 @@ Days until program expires : 242
  nm:priorc='0' nm:olntwopi='0' nm:ctype='0'
 />
 <nm:monitor>
-<nm:obj nm:iteration='0'>1822.7758249509361</nm:obj>
-<nm:obj nm:iteration='9'>887.93141921810229</nm:obj>
+<nm:obj nm:iteration='0'>110975.73250543405</nm:obj>
+<nm:obj nm:iteration='10'>870.13225233338892</nm:obj>
+<nm:obj nm:iteration='20'>870.05624434612753</nm:obj>
+<nm:obj nm:iteration='30'>868.57592767890935</nm:obj>
 </nm:monitor>
 <nm:termination_status>0</nm:termination_status>
-<nm:termination_nfuncevals>71</nm:termination_nfuncevals>
-<nm:termination_sigdigits>3.3139661806203971</nm:termination_sigdigits>
+<nm:termination_nfuncevals>238</nm:termination_nfuncevals>
+<nm:termination_sigdigits>3.1614052319778310</nm:termination_sigdigits>
 <nm:termination_information><![CDATA[
 0MINIMIZATION SUCCESSFUL
- NO. OF FUNCTION EVALUATIONS USED:       71
- NO. OF SIG. DIGITS IN FINAL EST.:  3.3
+ NO. OF FUNCTION EVALUATIONS USED:      238
+ NO. OF SIG. DIGITS IN FINAL EST.:  3.2
 0PARAMETER ESTIMATE IS NEAR ITS BOUNDARY
  THIS MUST BE ADDRESSED BEFORE THE COVARIANCE STEP CAN BE IMPLEMENTED
 ]]></nm:termination_information>
@@ -380,13 +382,13 @@ Days until program expires : 242
 <nm:col nm:cname='EPS2'>100.00000000000000</nm:col>
 </nm:row>
 </nm:epsshrinkvr>
-<nm:estimation_elapsed_time>0.01</nm:estimation_elapsed_time>
+<nm:estimation_elapsed_time>0.04</nm:estimation_elapsed_time>
 <nm:final_objective_function_text>MINIMUM VALUE OF OBJECTIVE FUNCTION</nm:final_objective_function_text>
-<nm:final_objective_function>887.93141921810229</nm:final_objective_function>
+<nm:final_objective_function>868.57592767890935</nm:final_objective_function>
 <nm:theta>
 <nm:val nm:name='1'>4.00000000000000008E-008</nm:val>
-<nm:val nm:name='2'>1.0909338267815933</nm:val>
-<nm:val nm:name='3'>53301.071519020785</nm:val>
+<nm:val nm:name='2'>1.34302724015856141E-005</nm:val>
+<nm:val nm:name='3'>41568.452950014493</nm:val>
 <nm:val nm:name='4'>9.99999999999999955E-007</nm:val>
 </nm:theta>
 <nm:omega>
@@ -427,11 +429,11 @@ Days until program expires : 242
 </nm:sigmac>
 </nm:estimation>
 <nm:post_process_times>
-<nm:post_elapsed_time>0.01</nm:post_elapsed_time>
+<nm:post_elapsed_time>0.00</nm:post_elapsed_time>
 <nm:finaloutput_elapsed_time>0.02</nm:finaloutput_elapsed_time>
 </nm:post_process_times>
 </nm:problem>
 </nm:nonmem>
-<nm:stop_datetime>2024-09-17T18:49:28.594</nm:stop_datetime>
-<nm:total_cputime>0.063</nm:total_cputime>
+<nm:stop_datetime>2024-09-19T17:10:58.816</nm:stop_datetime>
+<nm:total_cputime>0.094</nm:total_cputime>
 </nm:output>

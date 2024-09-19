@@ -1,5 +1,6 @@
 ;; 1. Based on: 1
-$PROBLEM SB vitreous
+;; 2. Description: SB vitreous with additive error
+$PROBLEM SB vitreous with additive error
 
 $INPUT ID	TIME	DV	MDV	CMT	AMT	GROUP=SKIP	LEFT	SITE	DAY	WEEK	ID2=SKIP	IDD=SKIP
 
@@ -26,7 +27,7 @@ $ERROR
 $THETA
  (0,0.000004)      ; CL
  (0,0.0007)         ; V
- 10000  ; Additive Residual Variability
+ 1000  ; Additive Residual Variability
  0.000001 FIX        ; Proportional Residual Variability
 $OMEGA 
 0 FIX

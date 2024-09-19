@@ -1,6 +1,8 @@
-2024-09-17 
-오후 06:53
-$PROBLEM SB vitreous
+2024-09-19 
+오후 04:59
+;; 1. Based on: 1
+$PROBLEM SB vitreous with IIV CL
+;; 2. Description: SB vitreous with IIV CL
 
 $INPUT ID	TIME	DV	MDV	CMT	AMT	GROUP=SKIP	LEFT	SITE	DAY	WEEK	ID2=SKIP	IDD=SKIP
 
@@ -33,7 +35,7 @@ $OMEGA
 0.1
 0 FIX
 
-$SIGMA 1 FIX 1 FIX
+$SIGMA 1 FIX 
 
 $COVARIANCE PRINT = E
 
@@ -55,8 +57,8 @@ Note: Analytical 2nd Derivatives are constructed in FSUBS but are never used.
   
 License Registered to: AIMS BioScience Co
 Expiration Date:    14 MAY 2025
-Current Date:       17 SEP 2024
-Days until program expires : 242
+Current Date:       19 SEP 2024
+Days until program expires : 240
 1NONLINEAR MIXED EFFECTS MODEL PROGRAM (NONMEM) VERSION 7.5.1
  ORIGINALLY DEVELOPED BY STUART BEAL, LEWIS SHEINER, AND ALISON BOECKMANN
  CURRENT DEVELOPERS ARE ROBERT BAUER, ICON DEVELOPMENT SOLUTIONS,
@@ -64,7 +66,7 @@ Days until program expires : 242
  PERFORMED BY NOUS INFOSYSTEMS.
 
  PROBLEM NO.:         1
- SB vitreous
+ SB vitreous with IIV CL
 0DATA CHECKOUT RUN:              NO
  DATA SET LOCATED ON UNIT NO.:    2
  THIS UNIT TO BE REWOUND:        NO
@@ -90,7 +92,7 @@ Days until program expires : 242
   1
   0  2
 0DEFAULT OMEGA BOUNDARY TEST OMITTED:    NO
-0SIGMA HAS SIMPLE DIAGONAL FORM WITH DIMENSION:   2
+0SIGMA HAS SIMPLE DIAGONAL FORM WITH DIMENSION:   1
 0DEFAULT SIGMA BOUNDARY TEST OMITTED:    NO
 0INITIAL ESTIMATE OF THETA:
  LOWER BOUND    INITIAL EST    UPPER BOUND
@@ -106,7 +108,6 @@ Days until program expires : 242
                   0.0000E+00
 0INITIAL ESTIMATE OF SIGMA:
  0.1000E+01
- 0.0000E+00   0.1000E+01
 0SIGMA CONSTRAINED TO BE THIS INITIAL ESTIMATE
 0COVARIANCE STEP OMITTED:        NO
  EIGENVLS. PRINTED:             YES
@@ -322,8 +323,8 @@ Days until program expires : 242
  EBVSHRINKSD(%)  8.3866E-03  0.0000E+00
  EBVSHRINKVR(%)  1.6772E-02  0.0000E+00
  RELATIVEINF(%)  9.9983E+01  0.0000E+00
- EPSSHRINKSD(%)  9.8470E+01  1.0000E+02
- EPSSHRINKVR(%)  9.9977E+01  1.0000E+02
+ EPSSHRINKSD(%)  9.8470E+01
+ EPSSHRINKVR(%)  9.9977E+01
 
   
  TOTAL DATA POINTS NORMALLY DISTRIBUTED (N):           39
@@ -335,8 +336,8 @@ Days until program expires : 242
  TOTAL EFFECTIVE ETAS (NIND*NETA):                            39
   
  #TERE:
- Elapsed estimation  time in seconds:     0.41
- Elapsed postprocess time in seconds:     0.01
+ Elapsed estimation  time in seconds:     0.35
+ Elapsed postprocess time in seconds:     0.02
 1
  
  
@@ -406,13 +407,10 @@ Days until program expires : 242
  SIGMA - COV MATRIX FOR RANDOM EFFECTS - EPSILONS  ****
 
 
-         EPS1      EPS2     
+         EPS1     
  
  EPS1
 +        1.00E+00
- 
- EPS2
-+        0.00E+00  1.00E+00
  
 1
 
@@ -433,16 +431,13 @@ Days until program expires : 242
  SIGMA - CORR MATRIX FOR RANDOM EFFECTS - EPSILONS  ***
 
 
-         EPS1      EPS2     
+         EPS1     
  
  EPS1
 +        1.00E+00
  
- EPS2
-+        0.00E+00  1.00E+00
- 
  Elapsed finaloutput time in seconds:     0.02
- #CPUT: Total CPU Time in Seconds,        0.531
+ #CPUT: Total CPU Time in Seconds,        0.453
 Stop Time: 
-2024-09-17 
-오후 06:53
+2024-09-19 
+오후 04:59

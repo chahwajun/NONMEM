@@ -1,0 +1,171 @@
+library(tidyverse)
+
+
+#data generation ----
+raw_data1  <- read_csv("SJ/rawdata/복사본 ★ S24008_Final Resul_보고서용_240527.csv", skip=1) |> 
+  fill(c(Group, `Sampling date`), .direction = "down")
+raw_data2 <- read_csv("SJ/rawdata/G001_Ocular PK 분석결과_(16주차)_2024.06.24 (공유본).csv", skip = 2)
+raw_data3　<- read_csv("SJ/rawdata/S24006_Ocular PK 분석결과_(24주차)_2024.08.19_SB정리(공유용).csv", skip = 2)
+
+###########################################################################################################################    
+tidy1 <- raw_data1 |> 
+  filter(Group %in% c("G1","G2","G3", "G4","G5","G6","G7","G8", "G9", "G10", "G11")) |> 
+  select(1,2,3,7,12) |> 
+  rename("ID" = `Animal ID`,"Left" = "...7", "Right" = "...12") |> 
+  mutate(SITE = c(
+    rep("Aqueous humor", each = 101), rep("Vitreous humor", each = 101), rep("Iris", each = 101), 
+    rep("Retina", each = 101),rep("Choroid",each = 101),rep("Optic Nerve", each = 101),rep("Serum", each = 101)
+  )) |> 
+  separate_wider_delim(`Sampling date`,delim = " ", names = c("Date", "Time")) |>
+  # separate(Group, into = c("Remove", "Group"), sep = 1) |> 
+  #ID = str_replace_all(ID, c("1A"= "110", "1B"="111")
+  select(ID, Time, Left, Right, SITE, Group) |> 
+  mutate(Time = as.double(Time),
+         TIME = (Time-1)*24,
+         Day = Time,
+         Week = (Time-1)/7
+  ) |> 
+  pivot_longer(cols = c("Left", "Right"), names_to = "EYE", values_to = "DV") |>   #LEFT 1 RIGHT 0
+  filter(SITE !="Serum" |(SITE == "Serum" & !is.na(DV))) |> 
+  select(1,5,9,4,8,3,6,7) |>     #SITE (1:aq, 2:vit, 3:iris, 4:retina, 5:choroid, 6:optic nerve, 7:serum)
+  mutate(CMT = case_when(
+    SITE == "Vitreous humor" ~  2,
+    SITE == "Retina" ~  4,
+    SITE == "Optic Nerve" ~  6,
+    SITE == "Serum" ~  7,
+    SITE == "Aqueous humor" ~  1,
+    SITE == "Choroid" ~  5,
+    SITE == "Iris" ~  3
+  ),
+  DV = as.double(gsub(",", "", DV)),
+  EYE = case_when(
+    EYE == "Left"& CMT %in% c(1:6) ~ 1,
+    EYE == "Right"& CMT %in% c(1:6) ~ 0,
+    CMT == 7 ~ 2
+  ),   #Left 1, Right0 Serum 2
+  MDV = 0, BLQ = 5,
+  DRUG = case_when(
+    Group == "G1" ~ 4,
+    Group %in% c("G2","G3", "G4", "G5", "G6", "G7","G8") ~ 1,
+    Group == "G9" ~ 3,
+    Group %in% c("G10", "G11") ~ 2
+  )
+  ) |> 
+  select(ID,TIME,DV,MDV, GROUP=Group, LEFT=EYE, CMT,DRUG, DAY=Day,WEEK=Week, BLQ) |> 
+  group_by(GROUP) |> 
+  arrange(ID) |> 
+  ungroup()
+
+tidy1 <- tidy1 |> 
+  mutate(MDV = ifelse(is.na(DV),1,0 ))
+tidy1 |> 
+  write_csv("SJ/eye1.csv")
+###########################################################################################################################    
+tidy2 <- raw_data2 |> 
+  select(2,3,5,6,13) |> 
+  fill(c(`Animal ID`, Tissue, `Sampling\r\npoint`), .direction = "down") |> 
+  filter(`Animal ID` %in% c(1101,1102,1103,1201,1202,1203,1301,1302,1303)) 
+colnames(tidy2) <- c("ID", "TIME", "CMT", "LEFT", "DV")
+
+tidy2 <- tidy2 |> 
+  mutate(CMT = case_when(
+    CMT == "Vitreous" ~  2,
+    CMT == "Retina" ~  4,
+    CMT == "Optic nerve" ~  6,
+    CMT == "Serum" ~  7,
+    CMT == "Aqueous" ~  1,
+    CMT == "Choroid" ~  5,
+    CMT == "Iris" ~  3
+  ),
+  DV = as.double(gsub(",", "", DV)), 
+  MDV = ifelse(is.na(DV), 1, 0),
+  Group = case_when(
+    ID %in% c(1101:1103) ~ "G3",
+    ID %in% c(1201:1203) ~ "G4",
+    ID %in% c(1301:1303) ~ "G9"
+  ),
+  LEFT = case_when(
+    LEFT =="Left" ~ 1,
+    LEFT == "Right" ~ 0,
+    LEFT == "-" ~ 2
+  )
+  ) |> 
+  separate(TIME, into=c("TIME", "WEEK"),sep = 1) 
+
+tidy2 <- tidy2 |> 
+  mutate(WEEK = 113,
+         DAY  = 113, 
+         TIME = (WEEK-1)*24,
+         WEEK = (DAY-1)/7,
+         DRUG = ifelse(ID %in% c(1301:1303),3,1),
+         BLQ = 5
+  ) |> 
+  select(ID,TIME, DV, MDV, GROUP=Group, LEFT, CMT, DRUG, DAY, WEEK, BLQ )
+
+tidy2 |> 
+  write_csv("SJ/eye2.csv", na = "")
+
+###########################################################################################################################    
+
+tidy3 <- raw_data3 |> 
+  select(2,3,5,6,13)
+colnames(tidy3) <- c("ID", "TIME", "CMT", "LEFT", "DV") 
+
+tidy3 <- tidy3 |> 
+  fill(c("ID", "TIME","CMT"), .direction = "down") |> 
+  filter(ID %in% c(1104,1105,1106,1204,1205,1206,1304,1305,1306)) |> 
+  mutate(CMT = case_when(
+    CMT == "Vitreous" ~  2,
+    CMT == "Retina" ~  4,
+    CMT == "Optic nerve" ~  6,
+    CMT == "Serum" ~  7,
+    CMT == "Aqueous" ~  1,
+    CMT == "Choroid" ~  5,
+    CMT == "Iris" ~  3
+  ),
+  DV = as.double(gsub(",", "", DV)), 
+  MDV = ifelse(is.na(DV), 1, 0),
+  GROUP = case_when(
+    ID %in% c(1104:1106) ~ "G3",
+    ID %in% c(1204:1206) ~ "G4",
+    ID %in% c(1304:1306) ~ "G9"
+  ),
+  LEFT = case_when(
+    LEFT =="Left" ~ 1,
+    LEFT == "Right" ~ 0,
+    LEFT == "-" ~ 2
+  )
+  ) |> 
+  separate(TIME, into = c("ABC", "DAY"),sep = 1) 
+tidy3 <- tidy3 |> 
+  mutate(DAY = as.double(DAY),
+         WEEK = (DAY-1)/7,
+         TIME = (DAY-1)*24,
+         DRUG = ifelse(ID %in%c(1304:1306),3,1),
+         BLQ = 5
+  ) |> 
+  select(ID,TIME, DV, MDV, GROUP, LEFT, CMT, DRUG, DAY, WEEK, BLQ )
+tidy3 |> 
+  write_csv("SJ/eye3.csv", na = "")
+
+###########################################################################################################################  
+eye1 <- read_csv("SJ/HJ_data/eye1.csv")
+eye2 <- read_csv("SJ/HJ_data/eye2.csv") |> 
+  mutate(ID = ID+1000)
+eye3 <- read_csv("SJ/HJ_data/eye3.csv") |> 
+  mutate(ID = ID+1000)
+
+eye23 <- bind_rows(eye2, eye3) |> 
+  group_by(ID) |> 
+  arrange(ID, TIME) |> 
+  mutate(ID = as.character(ID))
+bind_rows(eye1, eye23) |> 
+  write_csv("SJ/HJ_data/eye_full2.csv", na = "")
+
+
+###########################################################################################################################  
+Double checking for rows ----
+library(tidyverse)
+
+original <- read_csv("SJ/rawdata/FN_240830_Total dataset.csv") |> 
+  filter(MDV ==0)

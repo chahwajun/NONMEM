@@ -1,5 +1,5 @@
-GFORTRAN module version '6' created from PRGLOBALP.f90 on Tue Sep 17 18:13:27 2024
-MD5:1e84c8d23066420afe290df5d028f724 -- If you edit this, you'll get what you deserve.
+GFORTRAN module version '6' created from PRGLOBALP.f90 on Thu Sep 19 17:27:18 2024
+MD5:d2a333beb5e4c6ee6fe77204abba3c72 -- If you edit this, you'll get what you deserve.
 
 (() () () () () () () () () () () () () () () () () () () () () () ()
 () () () ())
@@ -22,14 +22,14 @@ EXPLICIT (CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '1') (CONSTANT (INTEGER
 UNKNOWN IMPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 REAL ()) 0 0 () (3 0
 EXPLICIT (CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '1') (CONSTANT (INTEGER
 4 0 0 INTEGER ()) 0 '30') (CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '1') (
-CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '2') (CONSTANT (INTEGER 4 0 0
-INTEGER ()) 0 '1') (CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '2')) 0 () ()
+CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '4') (CONSTANT (INTEGER 4 0 0
+INTEGER ()) 0 '1') (CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '4')) 0 () ()
 () 0 0)
 4 'da_0' 'prmod_real' 'da_0' 1 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN IMPLICIT-SAVE 0 0 DIMENSION) (REAL 8 0 0 REAL ()) 0 0 () (2 0
 EXPLICIT (CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '1') (CONSTANT (INTEGER
 4 0 0 INTEGER ()) 0 '30') (CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '1') (
-CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '2')) 0 () () () 0 0)
+CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '4')) 0 () () () 0 0)
 5 'dpsize' 'prsizes' 'dpsize' 1 ((PARAMETER UNKNOWN-INTENT UNKNOWN-PROC
 UNKNOWN IMPLICIT-SAVE 0 0) (INTEGER 4 0 0 INTEGER ()) 0 0 () (CONSTANT (
 INTEGER 4 0 0 INTEGER ()) 0 '8') () 0 () () () 0 0)
@@ -43,7 +43,7 @@ IMPLICIT-SAVE 0 0) (INTEGER 4 0 0 INTEGER ()) 0 0 () (CONSTANT (INTEGER
 4 0 0 INTEGER ()) 0 '30') () 0 () () () 0 0)
 9 'pe' 'prsizes' 'pe' 1 ((PARAMETER UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
 IMPLICIT-SAVE 0 0) (INTEGER 4 0 0 INTEGER ()) 0 0 () (CONSTANT (INTEGER
-4 0 0 INTEGER ()) 0 '2') () 0 () () () 0 0)
+4 0 0 INTEGER ()) 0 '4') () 0 () () () 0 0)
 10 'prmod_real' 'prmod_real' 'prmod_real' 1 ((MODULE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN UNKNOWN 0 0) (UNKNOWN 0 0 0 UNKNOWN ()) 0 0 () () 0
 () () () 0 0)

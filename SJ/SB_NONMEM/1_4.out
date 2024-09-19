@@ -1,5 +1,5 @@
-2024-09-17 
-오후 06:49
+2024-09-19 
+오후 05:10
 ;; 1. Based on: 1
 $PROBLEM SB vitreous
 
@@ -28,7 +28,7 @@ $ERROR
 $THETA
  (0,0.000004)      ; CL
  (0,0.0007)         ; V
- 10000  ; Additive Residual Variability
+ 1000  ; Additive Residual Variability
  0.000001 FIX        ; Proportional Residual Variability
 $OMEGA 
 0 FIX
@@ -56,8 +56,8 @@ Note: Analytical 2nd Derivatives are constructed in FSUBS but are never used.
   
 License Registered to: AIMS BioScience Co
 Expiration Date:    14 MAY 2025
-Current Date:       17 SEP 2024
-Days until program expires : 242
+Current Date:       19 SEP 2024
+Days until program expires : 240
 1NONLINEAR MIXED EFFECTS MODEL PROGRAM (NONMEM) VERSION 7.5.1
  ORIGINALLY DEVELOPED BY STUART BEAL, LEWIS SHEINER, AND ALISON BOECKMANN
  CURRENT DEVELOPERS ARE ROBERT BAUER, ICON DEVELOPMENT SOLUTIONS,
@@ -95,7 +95,7 @@ Days until program expires : 242
  LOWER BOUND    INITIAL EST    UPPER BOUND
   0.0000E+00     0.4000E-05     0.1000E+07
   0.0000E+00     0.7000E-03     0.1000E+07
- -0.1000E+07     0.1000E+05     0.1000E+07
+ -0.1000E+07     0.1000E+04     0.1000E+07
   0.1000E-05     0.1000E-05     0.1000E-05
 0INITIAL ESTIMATE OF OMEGA:
  0.0000E+00
@@ -250,22 +250,34 @@ Days until program expires : 242
  MONITORING OF SEARCH:
 
 
-0ITERATION NO.:    0    OBJECTIVE VALUE:   1822.77582495094        NO. OF FUNC. EVALS.:   5
+0ITERATION NO.:    0    OBJECTIVE VALUE:   110975.732505434        NO. OF FUNC. EVALS.:   5
  CUMULATIVE NO. OF FUNC. EVALS.:        5
- NPARAMETR:  4.0000E-06  7.0000E-04  1.0000E+04
+ NPARAMETR:  4.0000E-06  7.0000E-04  1.0000E+03
  PARAMETER:  1.0000E-01  1.0000E-01  1.0000E-01
- GRADIENT:   7.2391E+00 -3.5477E+00 -2.1275E+04
+ GRADIENT:   7.2391E+02 -3.5477E+02 -2.2047E+06
 
-0ITERATION NO.:    9    OBJECTIVE VALUE:   887.931419218102        NO. OF FUNC. EVALS.:  66
- CUMULATIVE NO. OF FUNC. EVALS.:       71
- NPARAMETR:  4.0000E-08  1.0909E+00  5.3301E+04
- PARAMETER: -1.8224E+01  7.4515E+00  5.3301E-01
- GRADIENT:   0.0000E+00  6.4616E-04 -7.3941E-03
+0ITERATION NO.:   10    OBJECTIVE VALUE:   870.132252333389        NO. OF FUNC. EVALS.:  71
+ CUMULATIVE NO. OF FUNC. EVALS.:       76
+ NPARAMETR:  4.0000E-08  1.1249E-05  4.7470E+04
+ PARAMETER: -5.4597E+00 -4.0308E+00  4.7470E+00
+ GRADIENT:   0.0000E+00 -3.4279E+00  3.7018E+00
+
+0ITERATION NO.:   20    OBJECTIVE VALUE:   870.056244346128        NO. OF FUNC. EVALS.:  90
+ CUMULATIVE NO. OF FUNC. EVALS.:      166
+ NPARAMETR:  4.0000E-08  1.1297E-05  4.7302E+04
+ PARAMETER: -4.5375E+00 -4.0265E+00  4.7302E+00
+ GRADIENT:   0.0000E+00 -3.3645E+00  3.6304E+00
+
+0ITERATION NO.:   30    OBJECTIVE VALUE:   868.575927678909        NO. OF FUNC. EVALS.:  72
+ CUMULATIVE NO. OF FUNC. EVALS.:      238
+ NPARAMETR:  4.0000E-08  1.3430E-05  4.1568E+04
+ PARAMETER: -4.5964E+00 -3.8536E+00  4.1568E+00
+ GRADIENT:   0.0000E+00 -5.2978E-02 -1.8495E-02
 
  #TERM:
 0MINIMIZATION SUCCESSFUL
- NO. OF FUNCTION EVALUATIONS USED:       71
- NO. OF SIG. DIGITS IN FINAL EST.:  3.3
+ NO. OF FUNCTION EVALUATIONS USED:      238
+ NO. OF SIG. DIGITS IN FINAL EST.:  3.2
 0PARAMETER ESTIMATE IS NEAR ITS BOUNDARY
  THIS MUST BE ADDRESSED BEFORE THE COVARIANCE STEP CAN BE IMPLEMENTED
 
@@ -289,15 +301,15 @@ Days until program expires : 242
   
  TOTAL DATA POINTS NORMALLY DISTRIBUTED (N):           39
  N*LOG(2PI) CONSTANT TO OBJECTIVE FUNCTION:    71.677205589964473     
- OBJECTIVE FUNCTION VALUE WITHOUT CONSTANT:    887.93141921810229     
- OBJECTIVE FUNCTION VALUE WITH CONSTANT:       959.60862480806679     
+ OBJECTIVE FUNCTION VALUE WITHOUT CONSTANT:    868.57592767890935     
+ OBJECTIVE FUNCTION VALUE WITH CONSTANT:       940.25313326887385     
  REPORTED OBJECTIVE FUNCTION DOES NOT CONTAIN CONSTANT
   
  TOTAL EFFECTIVE ETAS (NIND*NETA):                             0
   
  #TERE:
- Elapsed estimation  time in seconds:     0.01
- Elapsed postprocess time in seconds:     0.01
+ Elapsed estimation  time in seconds:     0.04
+ Elapsed postprocess time in seconds:     0.00
 1
  
  
@@ -331,7 +343,7 @@ Days until program expires : 242
 
 
 
- #OBJV:********************************************      887.931       **************************************************
+ #OBJV:********************************************      868.576       **************************************************
 1
  ************************************************************************************************************************
  ********************                                                                                ********************
@@ -347,7 +359,7 @@ Days until program expires : 242
 
          TH 1      TH 2      TH 3      TH 4     
  
-         4.00E-08  1.09E+00  5.33E+04  1.00E-06
+         4.00E-08  1.34E-05  4.16E+04  1.00E-06
  
 
 
@@ -403,7 +415,7 @@ Days until program expires : 242
 +        0.00E+00  1.00E+00
  
  Elapsed finaloutput time in seconds:     0.02
- #CPUT: Total CPU Time in Seconds,        0.063
+ #CPUT: Total CPU Time in Seconds,        0.094
 Stop Time: 
-2024-09-17 
-오후 06:49
+2024-09-19 
+오후 05:10

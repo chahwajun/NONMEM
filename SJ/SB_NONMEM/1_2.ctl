@@ -1,5 +1,6 @@
 ;; 1. Based on: 1
-$PROBLEM SB vitreous
+;; 2. Description: SB vitreous with IIV CL V combined error
+$PROBLEM SB vitreous with IIV CL V combined error
 
 $INPUT ID	TIME	DV	MDV	CMT	AMT	GROUP=SKIP	LEFT	SITE	DAY	WEEK	ID2=SKIP	IDD=SKIP
 

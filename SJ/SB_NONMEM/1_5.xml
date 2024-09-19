@@ -5,9 +5,11 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://namespaces.oreilly.com/xmlnut/address output.xsd"
 xmlns:nm="http://namespaces.oreilly.com/xmlnut/address"
 >
-<nm:start_datetime>2024-09-17T18:53:49.807</nm:start_datetime>
+<nm:start_datetime>2024-09-19T16:59:47.408</nm:start_datetime>
 <nm:control_stream><![CDATA[
-$PROBLEM SB vitreous
+;; 1. Based on: 1
+$PROBLEM SB vitreous with IIV CL
+;; 2. Description: SB vitreous with IIV CL
 
 $INPUT ID	TIME	DV	MDV	CMT	AMT	GROUP=SKIP	LEFT	SITE	DAY	WEEK	ID2=SKIP	IDD=SKIP
 
@@ -40,7 +42,7 @@ $OMEGA
 0.1
 0 FIX
 
-$SIGMA 1 FIX 1 FIX
+$SIGMA 1 FIX
 
 $COVARIANCE PRINT = E
 
@@ -64,8 +66,8 @@ Note: Analytical 2nd Derivatives are constructed in FSUBS but are never used.
 <nm:license_information><![CDATA[
 License Registered to: AIMS BioScience Co
 Expiration Date:    14 MAY 2025
-Current Date:       17 SEP 2024
-Days until program expires : 242
+Current Date:       19 SEP 2024
+Days until program expires : 240
 ]]></nm:license_information>
 <nm:program_information><![CDATA[
 1NONLINEAR MIXED EFFECTS MODEL PROGRAM (NONMEM) VERSION 7.5.1
@@ -75,11 +77,11 @@ Days until program expires : 242
  PERFORMED BY NOUS INFOSYSTEMS.
 ]]></nm:program_information>
 <nm:problem nm:number='1' nm:subproblem='0' nm:superproblem1='0' nm:iteration1='0' nm:superproblem2='0' nm:iteration2='0'>
-<nm:problem_title>SB vitreous</nm:problem_title>
+<nm:problem_title>SB vitreous with IIV CL</nm:problem_title>
 <nm:problem_information><![CDATA[
 
  PROBLEM NO.:         1
- SB vitreous
+ SB vitreous with IIV CL
 0DATA CHECKOUT RUN:              NO
  DATA SET LOCATED ON UNIT NO.:    2
  THIS UNIT TO BE REWOUND:        NO
@@ -105,7 +107,7 @@ Days until program expires : 242
   1
   0  2
 0DEFAULT OMEGA BOUNDARY TEST OMITTED:    NO
-0SIGMA HAS SIMPLE DIAGONAL FORM WITH DIMENSION:   2
+0SIGMA HAS SIMPLE DIAGONAL FORM WITH DIMENSION:   1
 0DEFAULT SIGMA BOUNDARY TEST OMITTED:    NO
 0INITIAL ESTIMATE OF THETA:
  LOWER BOUND    INITIAL EST    UPPER BOUND
@@ -121,7 +123,6 @@ Days until program expires : 242
                   0.0000E+00
 0INITIAL ESTIMATE OF SIGMA:
  0.1000E+01
- 0.0000E+00   0.1000E+01
 0SIGMA CONSTRAINED TO BE THIS INITIAL ESTIMATE
 0COVARIANCE STEP OMITTED:        NO
  EIGENVLS. PRINTED:             YES
@@ -216,7 +217,7 @@ Days until program expires : 242
  nm:data_sub_array2='0' nm:data_sub_array3='0' nm:data_pred_indices='11,2,6,0,0,0,5,0,0,0,0'
  nm:data_format='(e4.0,e5.0,e12.0,2e2.0,e4.0,2e2.0,e3.0,e2.0,1f2.0)' nm:data_nobs='39' nm:data_nind='40'
  nm:data_mdv100='0' nm:nthetat='4' nm:theta_bound_test_omitted='no' nm:omega_blockdim='2'
- nm:omega_bound_test_omitted='no' nm:sigma_diagdim='2' nm:sigma_bound_test_omitted='no' nm:cov_omitted='no'
+ nm:omega_bound_test_omitted='no' nm:sigma_diagdim='1' nm:sigma_bound_test_omitted='no' nm:cov_omitted='no'
  nm:cov_matrix='rsr' nm:cov_eigen_print='yes' nm:cov_special='no' nm:cov_compressed='no'
  nm:cov_slow_gradient='noslow' nm:cov_siglocov='-1' nm:cov_siglcov='-1' nm:cov_tol='-1' nm:cov_atol='-1'
  nm:cov_nofcov='no' nm:cov_cholroff='0' nm:cov_knuthsumoff='-1' nm:cov_resume='no' nm:cov_sirsample='BLANK'
@@ -381,16 +382,14 @@ Days until program expires : 242
 <nm:epsshrinksd>
 <nm:row nm:rname='SUBPOP1'>
 <nm:col nm:cname='EPS1'>98.469602668041759</nm:col>
-<nm:col nm:cname='EPS2'>100.00000000000000</nm:col>
 </nm:row>
 </nm:epsshrinksd>
 <nm:epsshrinkvr>
 <nm:row nm:rname='SUBPOP1'>
 <nm:col nm:cname='EPS1'>99.976578840063340</nm:col>
-<nm:col nm:cname='EPS2'>100.00000000000000</nm:col>
 </nm:row>
 </nm:epsshrinkvr>
-<nm:estimation_elapsed_time>0.41</nm:estimation_elapsed_time>
+<nm:estimation_elapsed_time>0.35</nm:estimation_elapsed_time>
 <nm:final_objective_function_text>MINIMUM VALUE OF OBJECTIVE FUNCTION</nm:final_objective_function_text>
 <nm:final_objective_function>597.43217142912226</nm:final_objective_function>
 <nm:theta>
@@ -412,10 +411,6 @@ Days until program expires : 242
 <nm:row nm:rname='1'>
 <nm:col nm:cname='1'>1.0000000000000000</nm:col>
 </nm:row>
-<nm:row nm:rname='2'>
-<nm:col nm:cname='1'>0.0000000000000000</nm:col>
-<nm:col nm:cname='2'>1.0000000000000000</nm:col>
-</nm:row>
 </nm:sigma>
 <nm:omegac>
 <nm:row nm:rname='1'>
@@ -430,18 +425,14 @@ Days until program expires : 242
 <nm:row nm:rname='1'>
 <nm:col nm:cname='1'>1.0000000000000000</nm:col>
 </nm:row>
-<nm:row nm:rname='2'>
-<nm:col nm:cname='1'>0.0000000000000000</nm:col>
-<nm:col nm:cname='2'>1.0000000000000000</nm:col>
-</nm:row>
 </nm:sigmac>
 </nm:estimation>
 <nm:post_process_times>
-<nm:post_elapsed_time>0.01</nm:post_elapsed_time>
+<nm:post_elapsed_time>0.02</nm:post_elapsed_time>
 <nm:finaloutput_elapsed_time>0.02</nm:finaloutput_elapsed_time>
 </nm:post_process_times>
 </nm:problem>
 </nm:nonmem>
-<nm:stop_datetime>2024-09-17T18:53:50.285</nm:stop_datetime>
-<nm:total_cputime>0.531</nm:total_cputime>
+<nm:stop_datetime>2024-09-19T16:59:47.832</nm:stop_datetime>
+<nm:total_cputime>0.453</nm:total_cputime>
 </nm:output>

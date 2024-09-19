@@ -1,4 +1,6 @@
-$PROBLEM SB vitreous
+;; 1. Based on: 1
+$PROBLEM SB vitreous with IIV CL
+;; 2. Description: SB vitreous with IIV CL
 
 $INPUT ID	TIME	DV	MDV	CMT	AMT	GROUP=SKIP	LEFT	SITE	DAY	WEEK	ID2=SKIP	IDD=SKIP
 
@@ -31,7 +33,7 @@ $OMEGA
 0.1
 0 FIX
 
-$SIGMA 1 FIX 1 FIX
+$SIGMA 1 FIX 
 
 $COVARIANCE PRINT = E
 

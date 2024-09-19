@@ -1,7 +1,7 @@
-LTH            4              
-LVR            4              
+LTH            6              
+LVR            5              
 LVR2           0              
-LPAR           10             
+LPAR           17             
 LPAR3          0              
 NO             0              
 MMX            1              
@@ -33,7 +33,7 @@ MAXFCN         0
 MAXIC          0              
 PG             0              
 NPOPMIXMAX     0              
-MAXOMEG        2              
+MAXOMEG        4              
 MAXPTHETA      7              
 MAXITER        20             
 ISAMPLEMAX     0              
@@ -43,9 +43,9 @@ DIMNEW         0
 PDT            14             
 LADD_MAX       0              
 MAXSIDL        0              
-NTT            4              
-NOMEG          2              
-NSIGM          2              
-PPDT           5              
+NTT            6              
+NOMEG          4              
+NSIGM          1              
+PPDT           7              
 PAST_SIZE      0              
 MAXNRDS        0              
