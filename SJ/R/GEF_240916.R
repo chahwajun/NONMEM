@@ -121,18 +121,18 @@ NCA_result_monkey <- tblNCA(NCA_monkey, key ="ID", colTime = "time", colConc = "
 
 
 GEF <- tibble(
-  ID = c(GEF_result2$ID, NCA_result_monkey$ID, "Human"),
-GEF = c(GEF_result2$GEF, NCA_result_monkey$GEF, NA)
+  ID = c(GEF_result2$ID, NCA_result_monkey$ID),
+GEF = c(GEF_result2$GEF, NCA_result_monkey$GEF)
 ) |> 
-mutate(WT = c(GEF_result2$WT, NCA_result_monkey$WT,70),
+mutate(WT = c(GEF_result2$WT, NCA_result_monkey$WT),
        logGEF = log10(GEF), logWT = log10(WT),
-       Animal = c(rep("Rabbit", times=7), rep("Monkey",times=4), "Human")
+       Animal = c(rep("Rabbit", times=7), rep("Monkey",times=4))
        ) 
 
 result <-  lm(GEF$logGEF~GEF$logWT)
 summary(result)
 
-ggplot(GEF) + geom_point(aes(x = log10(WT), y = log10(GEF))) + theme_bw() +geom_abline(slope = -22.253, intercept = 16.788) +
+ggplot(GEF) + geom_point(aes(x = log10(WT), y = log10(GEF), color = Animal)) + theme_bw() +geom_abline(slope = -22.253, intercept = 16.788) +
   theme(axis.text.x = element_text(vjust = 0.5, size = 12),
         axis.text.y = element_text(vjust = 0.5, size = 12),
         axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
@@ -140,6 +140,7 @@ ggplot(GEF) + geom_point(aes(x = log10(WT), y = log10(GEF))) + theme_bw() +geom_
         legend.title = element_text(size = 12),
         strip.text = element_text(size = 12)) + 
   labs(X = "Log(Weight)", y = "Log(GEF)") 
+ggsave("SJ/Figure/GEF.png", width = 10, height = 6, dpi=600)
 
 
   

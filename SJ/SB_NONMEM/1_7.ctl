@@ -13,7 +13,7 @@ $PK
  CL   = THETA(1)*EXP(ETA(1))
  V    = THETA(2)*EXP(ETA(2))
  
- S1   = v/1000   ; dose: mg   V: ng/mL  
+ S1   = V/1000   ; dose: mg   V: ng/mL  
  
 $ERROR
 
@@ -31,7 +31,7 @@ $THETA
  0.000001 FIX        ; Proportional Residual Variability
 $OMEGA 
 0 FIX
-0.1
+0.01
 
 $SIGMA 1 FIX 
 

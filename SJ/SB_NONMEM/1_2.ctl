@@ -1,6 +1,6 @@
 ;; 1. Based on: 1
-;; 2. Description: SB vitreous with IIV CL V combined error
-$PROBLEM SB vitreous with IIV CL V combined error
+;; 2. Description: SB vitreous with IIV CL V
+$PROBLEM SB vitreous with IIV CL V
 
 $INPUT ID	TIME	DV	MDV	CMT	AMT	GROUP=SKIP	LEFT	SITE	DAY	WEEK	ID2=SKIP	IDD=SKIP
 
@@ -13,7 +13,7 @@ $PK
  CL   = THETA(1)*EXP(ETA(1))
  V    = THETA(2)*EXP(ETA(2))
  
- S1   = V   ; dose: mg   V: ng/mL  
+ S1   = V/1000   ; dose: mg   V: ng/mL  
  
 $ERROR
 
@@ -25,20 +25,20 @@ $ERROR
 
   
 $THETA
- (0,0.000004)      ; CL
- (0,0.0007)         ; V
- 100  ; Additive Residual Variability
- (0,0.1)        ; Proportional Residual Variability
+ (0,0.000002)      ; CL
+ (0,0.0005)        ; V
+ 0.000001  FIX  ; Additive Residual Variability
+ (0,0.4)        ; Proportional Residual Variability
 $OMEGA 
-0.1
-0.1
+0.01
+0.01
 
-$SIGMA 1 FIX 1 FIX
+$SIGMA 1 FIX 
 
 $COVARIANCE PRINT = E
 
 $ESTIMATION NOABORT MAXEVALS=9999 METHOD=1 INTER PRINT = 10
 
 
-$TABLE ID TIME DV MDV CMT AMT LEFT SITE DAY WEEK IWRES IRES IPRED CWRES                                          NOPRINT ONEHEADER          FILE=sdtab3
-$TABLE ID CL V ETA1 ETA2                                                                                         NOPRINT ONEHEADER NOAPPEND FILE=patab3
+$TABLE ID TIME DV MDV CMT AMT LEFT SITE DAY WEEK IWRES IRES IPRED CWRES                                          NOPRINT ONEHEADER          FILE=sdtab2
+$TABLE ID CL V ETA1 ETA2                                                                                         NOPRINT ONEHEADER NOAPPEND FILE=patab2

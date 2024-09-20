@@ -3,7 +3,6 @@ $PROBLEM SB vitreous 2comp
 
 $INPUT ID	TIME	DV	MDV	CMT	AMT	GROUP=SKIP	LEFT	SITE	DAY	WEEK	ID2=SKIP	IDD=SKIP
 
-
 $DATA SB.csv IGNORE=@
 
 $SUBROUTINES ADVAN3 TRANS4
@@ -27,9 +26,9 @@ $ERROR
 
   
 $THETA
- (0,0.000004)      ; CL
- (0,0.0004)         ; V1
- (0,0.000002)      ; Q
+ (0,0.000002)      ; CL
+ (0,0.0007)        ; V1
+ (0,0.000001)      ; Q
  (0,0.0001)       ; V2
  0.000001  FIX  ; Additive Residual Variability
  (0,0.1)        ; Proportional Residual Variability
@@ -38,7 +37,8 @@ $OMEGA
 0 FIX
 0 FIX
 0 FIX
-$SIGMA 1 FIX 
+$SIGMA 
+1 FIX 
 
 $COVARIANCE PRINT = E
 

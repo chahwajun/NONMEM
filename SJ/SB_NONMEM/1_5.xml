@@ -5,7 +5,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://namespaces.oreilly.com/xmlnut/address output.xsd"
 xmlns:nm="http://namespaces.oreilly.com/xmlnut/address"
 >
-<nm:start_datetime>2024-09-19T16:59:47.408</nm:start_datetime>
+<nm:start_datetime>2024-09-20T12:17:53.252</nm:start_datetime>
 <nm:control_stream><![CDATA[
 ;; 1. Based on: 1
 $PROBLEM SB vitreous with IIV CL
@@ -22,7 +22,7 @@ $PK
  CL   = THETA(1)*EXP(ETA(1))
  V    = THETA(2)*EXP(ETA(2))
 
- S1   = v/1000   ; dose: mg   V: ng/mL
+ S1   = V/1000   ; dose: mg   V: ng/mL
 
 $ERROR
 
@@ -34,12 +34,12 @@ $ERROR
 
 
 $THETA
- (0,0.000004)      ; CL
- (0,0.0004)         ; V
+ (0,0.000002)      ; CL
+ (0,0.0005)        ; V
  0.000001  FIX  ; Additive Residual Variability
  (0,0.5)        ; Proportional Residual Variability
 $OMEGA
-0.1
+0.01
 0 FIX
 
 $SIGMA 1 FIX
@@ -66,8 +66,8 @@ Note: Analytical 2nd Derivatives are constructed in FSUBS but are never used.
 <nm:license_information><![CDATA[
 License Registered to: AIMS BioScience Co
 Expiration Date:    14 MAY 2025
-Current Date:       19 SEP 2024
-Days until program expires : 240
+Current Date:       20 SEP 2024
+Days until program expires : 239
 ]]></nm:license_information>
 <nm:program_information><![CDATA[
 1NONLINEAR MIXED EFFECTS MODEL PROGRAM (NONMEM) VERSION 7.5.1
@@ -111,14 +111,14 @@ Days until program expires : 240
 0DEFAULT SIGMA BOUNDARY TEST OMITTED:    NO
 0INITIAL ESTIMATE OF THETA:
  LOWER BOUND    INITIAL EST    UPPER BOUND
-  0.0000E+00     0.4000E-05     0.1000E+07
-  0.0000E+00     0.4000E-03     0.1000E+07
+  0.0000E+00     0.2000E-05     0.1000E+07
+  0.0000E+00     0.5000E-03     0.1000E+07
   0.1000E-05     0.1000E-05     0.1000E-05
   0.0000E+00     0.5000E+00     0.1000E+07
 0INITIAL ESTIMATE OF OMEGA:
  BLOCK SET NO.   BLOCK                                                                    FIXED
         1                                                                                   NO
-                  0.1000E+00
+                  0.1000E-01
         2                                                                                  YES
                   0.0000E+00
 0INITIAL ESTIMATE OF SIGMA:
@@ -233,8 +233,8 @@ Days until program expires : 240
 <nm:val nm:name='4'>0.0000000000000000</nm:val>
 </nm:theta_lb>
 <nm:theta_in>
-<nm:val nm:name='1'>3.99999999999999982E-006</nm:val>
-<nm:val nm:name='2'>4.00000000000000019E-004</nm:val>
+<nm:val nm:name='1'>1.99999999999999991E-006</nm:val>
+<nm:val nm:name='2'>5.00000000000000010E-004</nm:val>
 <nm:val nm:name='3'>9.99999999999999955E-007</nm:val>
 <nm:val nm:name='4'>0.50000000000000000</nm:val>
 </nm:theta_in>
@@ -300,22 +300,24 @@ Days until program expires : 240
  nm:priorc='0' nm:olntwopi='0' nm:ctype='0'
 />
 <nm:monitor>
-<nm:obj nm:iteration='0'>697.70634649776275</nm:obj>
-<nm:obj nm:iteration='10'>598.11136674896193</nm:obj>
-<nm:obj nm:iteration='20'>597.45188353126605</nm:obj>
-<nm:obj nm:iteration='30'>597.44582969889950</nm:obj>
-<nm:obj nm:iteration='40'>597.44004749804151</nm:obj>
-<nm:obj nm:iteration='50'>597.43807598148283</nm:obj>
-<nm:obj nm:iteration='60'>597.43420451339455</nm:obj>
-<nm:obj nm:iteration='66'>597.43217142912226</nm:obj>
+<nm:obj nm:iteration='0'>938.28476777500396</nm:obj>
+<nm:obj nm:iteration='10'>597.80705823905475</nm:obj>
+<nm:obj nm:iteration='20'>597.52909743227599</nm:obj>
+<nm:obj nm:iteration='30'>597.51493522114174</nm:obj>
+<nm:obj nm:iteration='40'>597.49594890429398</nm:obj>
+<nm:obj nm:iteration='50'>597.47734246938637</nm:obj>
+<nm:obj nm:iteration='60'>597.46934593110598</nm:obj>
+<nm:obj nm:iteration='70'>597.46427118564429</nm:obj>
+<nm:obj nm:iteration='80'>597.45966973440682</nm:obj>
+<nm:obj nm:iteration='87'>597.45748241873980</nm:obj>
 </nm:monitor>
 <nm:termination_status>134</nm:termination_status>
-<nm:termination_nfuncevals>780</nm:termination_nfuncevals>
+<nm:termination_nfuncevals>1141</nm:termination_nfuncevals>
 <nm:termination_sigdigits>0.0000000000000000</nm:termination_sigdigits>
 <nm:termination_information><![CDATA[
 0MINIMIZATION TERMINATED
  DUE TO ROUNDING ERRORS (ERROR=134)
- NO. OF FUNCTION EVALUATIONS USED:      780
+ NO. OF FUNCTION EVALUATIONS USED:     1141
  NO. OF SIG. DIGITS UNREPORTABLE
 0PARAMETER ESTIMATE IS NEAR ITS BOUNDARY
 ]]></nm:termination_information>
@@ -327,13 +329,13 @@ Days until program expires : 240
 </nm:termination_txtmsg>
 <nm:etabar>
 <nm:row nm:rname='SUBPOP1'>
-<nm:col nm:cname='ETA1'>3.94888601936967316E-004</nm:col>
+<nm:col nm:cname='ETA1'>5.81768636161194772E-004</nm:col>
 <nm:col nm:cname='ETA2'>0.0000000000000000</nm:col>
 </nm:row>
 </nm:etabar>
 <nm:etabarse>
 <nm:row nm:rname='SUBPOP1'>
-<nm:col nm:cname='ETA1'>1.56293473934480710E-002</nm:col>
+<nm:col nm:cname='ETA1'>1.55475455638648240E-002</nm:col>
 <nm:col nm:cname='ETA2'>0.0000000000000000</nm:col>
 </nm:row>
 </nm:etabarse>
@@ -345,62 +347,62 @@ Days until program expires : 240
 </nm:etabarn>
 <nm:etabarpval>
 <nm:row nm:rname='SUBPOP1'>
-<nm:col nm:cname='ETA1'>0.97984282295731073</nm:col>
+<nm:col nm:cname='ETA1'>0.97015105584396488</nm:col>
 <nm:col nm:cname='ETA2'>1.0000000000000000</nm:col>
 </nm:row>
 </nm:etabarpval>
 <nm:etashrinksd>
 <nm:row nm:rname='SUBPOP1'>
-<nm:col nm:cname='ETA1'>4.85968400008252033E-002</nm:col>
+<nm:col nm:cname='ETA1'>3.30757565775163798E-003</nm:col>
 <nm:col nm:cname='ETA2'>0.0000000000000000</nm:col>
 </nm:row>
 </nm:etashrinksd>
 <nm:etashrinkvr>
 <nm:row nm:rname='SUBPOP1'>
-<nm:col nm:cname='ETA1'>9.71700634730621182E-002</nm:col>
+<nm:col nm:cname='ETA1'>6.61504191492578997E-003</nm:col>
 <nm:col nm:cname='ETA2'>0.0000000000000000</nm:col>
 </nm:row>
 </nm:etashrinkvr>
 <nm:ebvshrinksd>
 <nm:row nm:rname='SUBPOP1'>
-<nm:col nm:cname='EBV1'>8.38655763293338907E-003</nm:col>
+<nm:col nm:cname='EBV1'>8.32793881264670688E-003</nm:col>
 <nm:col nm:cname='EBV2'>0.0000000000000000</nm:col>
 </nm:row>
 </nm:ebvshrinksd>
 <nm:ebvshrinkvr>
 <nm:row nm:rname='SUBPOP1'>
-<nm:col nm:cname='EBV1'>1.67724119223803571E-002</nm:col>
+<nm:col nm:cname='EBV1'>1.66551840796452834E-002</nm:col>
 <nm:col nm:cname='EBV2'>0.0000000000000000</nm:col>
 </nm:row>
 </nm:ebvshrinkvr>
 <nm:relativeinf>
 <nm:row nm:rname='SUBPOP1'>
-<nm:col nm:cname='REL1'>99.983227588077611</nm:col>
+<nm:col nm:cname='REL1'>99.983344815920347</nm:col>
 <nm:col nm:cname='REL2'>0.0000000000000000</nm:col>
 </nm:row>
 </nm:relativeinf>
 <nm:epsshrinksd>
 <nm:row nm:rname='SUBPOP1'>
-<nm:col nm:cname='EPS1'>98.469602668041759</nm:col>
+<nm:col nm:cname='EPS1'>98.495589356557559</nm:col>
 </nm:row>
 </nm:epsshrinksd>
 <nm:epsshrinkvr>
 <nm:row nm:rname='SUBPOP1'>
-<nm:col nm:cname='EPS1'>99.976578840063340</nm:col>
+<nm:col nm:cname='EPS1'>99.977367486158968</nm:col>
 </nm:row>
 </nm:epsshrinkvr>
-<nm:estimation_elapsed_time>0.35</nm:estimation_elapsed_time>
+<nm:estimation_elapsed_time>0.48</nm:estimation_elapsed_time>
 <nm:final_objective_function_text>MINIMUM VALUE OF OBJECTIVE FUNCTION</nm:final_objective_function_text>
-<nm:final_objective_function>597.43217142912226</nm:final_objective_function>
+<nm:final_objective_function>597.45748241873980</nm:final_objective_function>
 <nm:theta>
-<nm:val nm:name='1'>6.19378296572268410E-006</nm:val>
-<nm:val nm:name='2'>9.25071306140212756E-004</nm:val>
+<nm:val nm:name='1'>6.07058885806330637E-006</nm:val>
+<nm:val nm:name='2'>9.01807749153921969E-004</nm:val>
 <nm:val nm:name='3'>9.99999999999999955E-007</nm:val>
 <nm:val nm:name='4'>5.00000000000000010E-003</nm:val>
 </nm:theta>
 <nm:omega>
 <nm:row nm:rname='1'>
-<nm:col nm:cname='1'>9.53604968338837150E-003</nm:col>
+<nm:col nm:cname='1'>9.42794441183221650E-003</nm:col>
 </nm:row>
 <nm:row nm:rname='2'>
 <nm:col nm:cname='1'>0.0000000000000000</nm:col>
@@ -414,7 +416,7 @@ Days until program expires : 240
 </nm:sigma>
 <nm:omegac>
 <nm:row nm:rname='1'>
-<nm:col nm:cname='1'>9.76526993143987387E-002</nm:col>
+<nm:col nm:cname='1'>9.70976025030083623E-002</nm:col>
 </nm:row>
 <nm:row nm:rname='2'>
 <nm:col nm:cname='1'>0.0000000000000000</nm:col>
@@ -428,11 +430,11 @@ Days until program expires : 240
 </nm:sigmac>
 </nm:estimation>
 <nm:post_process_times>
-<nm:post_elapsed_time>0.02</nm:post_elapsed_time>
-<nm:finaloutput_elapsed_time>0.02</nm:finaloutput_elapsed_time>
+<nm:post_elapsed_time>0.00</nm:post_elapsed_time>
+<nm:finaloutput_elapsed_time>0.03</nm:finaloutput_elapsed_time>
 </nm:post_process_times>
 </nm:problem>
 </nm:nonmem>
-<nm:stop_datetime>2024-09-19T16:59:47.832</nm:stop_datetime>
-<nm:total_cputime>0.453</nm:total_cputime>
+<nm:stop_datetime>2024-09-20T12:17:53.818</nm:stop_datetime>
+<nm:total_cputime>0.609</nm:total_cputime>
 </nm:output>
