@@ -24,18 +24,22 @@ sidebar <- card(
   hr(),
   h6("Observation Input"),
   fileInput("file1",label = "Observation"),
+  tableOutput("check"),
   hr()
 )
 
-body1 <- card(
-  card_title("Simulation Plot"),
-  plotlyOutput("simlationplot"),
-
+body1 <- layout_columns(
+  col_widths = c(6,6,12),
+  plotlyOutput("simlationplot1"),
+  plotlyOutput("simlationplot2")
+  
 )
-body2 <- card(
-  card_title("Simulation Plot"),
-  plotlyOutput("simlationplot"),
-  plotlyOutput("logsimulationplot")
+
+body2 <- layout_columns(
+  col_widths = c(6,6,12),
+  plotlyOutput("simlationplot3"),
+  plotlyOutput("simlationplot4")
+  
 )
 
 ui <- page_navbar(
@@ -78,39 +82,37 @@ server <- function(input, output, session) {
   })
   
   rxsolve <- eventReactive(input$simulate, {
-    rxSolve(model, dosing(), nSub = 500)
+    rxSolve(model, dosing(), nSub = 1)
   })
   
   simulation_data <- reactive({
     results <- rxsolve()
-    obs <- obs_data()
-    iqr <- results |>
-      group_by(time) |>
-      summarise(
-        ipred_max = quantile(ipred, 0.95),
-        ipred_min = quantile(ipred, 0.05)
-      ) |> 
-      mutate(day = time / 24)
     
-    median <- results |>
-      group_by(time) |>
-      summarise(ipred_median = median(ipred)) |> 
-      mutate(day = time / 24)
+    obs <- obs_data()
+    
+    VIT <- results |> 
+      select(day=time/24,DV=VIT/scale1, scale1, VIT)
+    AQ <- results |> 
+      select(day=time/24, scale2, AQ)
+    RET <- results |> 
+      select(day=time/24, scale3, RET)
+    SERUM <- results |> 
+      select(day=time/24, scale4, SERUM)
     
     obs_tidy <- obs |> 
       group_by(WEEK, GROUP) |> 
       summarize(DV = mean(DV)
-                )
-    list(iqr = iqr, median = median, obs_tidy=obs_tidy, obs= obs)
+      )
+    
+    list(VIT = VIT, AQ = AQ, RET=RET, SERUM=SERUM, obs_tidy=obs_tidy, obs= obs)
   })
   
-  output$simlationplot <- renderPlotly({
+  output$simlationplot1 <- renderPlotly({
 
     data <- simulation_data()
     
     plot <- ggplot() +
-      geom_ribbon(data = data$iqr, aes(x = day/7, ymin = ipred_min, ymax = ipred_max),fill = "#337AB7" , alpha = 0.3) +
-      geom_line(data = data$median, aes(x = day/7, y = ipred_median, color = "Median Concentration")) + theme_bw() +
+      geom_line(data = data$VIT, aes(x = day/7, y = DV),color = "#337AB7") + theme_bw() +
       labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL) + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
@@ -118,23 +120,25 @@ server <- function(input, output, session) {
             axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
             legend.title = element_text(size = 12)
       ) + scale_x_continuous(breaks = seq(0, ((input$time2*input$interval2)+24*7)/7, by = 2), limits = c(0,NA)) +
-      scale_color_manual(values = c("Median Concentration"="cyan4"))  + geom_hline(yintercept = input$hline, color = "darkred")
+         geom_hline(yintercept = input$hline, color = "darkred")
     
-
-     if(!(is.null(input$file1))) {
-      plot <- plot+ geom_point(data= data$obs, aes(x = WEEK, y= DV, group=GROUP), alpha = 0.2) +
-        geom_line(data = data$obs_tidy, aes(x = WEEK, y = DV, group=GROUP), color = "darkorange3")+
-        scale_color_manual(values = c("Median Concentration"="cyan4"))
-     }
+    
+    if(!(is.null(input$file1))) {
+      plot <- plot+ geom_point(data= obs_data(), aes(x = WEEK, y= DV, color=GROUP), alpha = 0.5) +
+        geom_line(data = data$obs_tidy, aes(x = WEEK, y = DV, group=GROUP), color = "darkorange3") + scale_y_log10()
+    }
     plot <- ggplotly(plot)
-      
+    
+    
   })
+  
+  
+  
   
   output$logsimulationplot <- renderPlotly({
     data <- simulation_data()
     
     plot <- ggplot() +
-      geom_ribbon(data = data$iqr, aes(x = day/7, ymin = ipred_min, ymax = ipred_max),fill = "#337AB7" , alpha = 0.3) +
       geom_line(data = data$median, aes(x = day/7, y = ipred_median, color = "Median Concentration")) + theme_bw() +
       labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL) + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
@@ -145,15 +149,20 @@ server <- function(input, output, session) {
       ) + scale_x_continuous(breaks = seq(0, ((input$time2*input$interval2)+24*7)/7, by = 2), limits = c(0,NA)) +
       scale_color_manual(values = c("Median Concentration"="cyan4")) +  scale_y_log10()+ geom_hline(yintercept = input$hline, color = "darkred")
     
- 
-     if(!(is.null(input$file1))) {
+    
+    if(!(is.null(input$file1))) {
       plot <- plot+ geom_point(data= obs_data(), aes(x = WEEK, y= DV, color=GROUP), alpha = 0.5) +
         scale_color_manual(values = c("Median Concentration"="cyan4"))+ 
         geom_line(data = data$obs_tidy, aes(x = WEEK, y = DV, group=GROUP), color = "darkorange3") + scale_y_log10()
-     }
+    }
     plot <- ggplotly(plot)
     
   })
+
+output$check <- renderTable({
+  result <- simulation_data()
+  result$VIT 
+})
 }
 
 shinyApp(ui, server)
