@@ -1,11 +1,11 @@
 name: aflibercept
-title: aflibercept
+title: Shiny
 username: pipettox
 account: pipettox
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 12786409
-bundleId: 9130947
+bundleId:
 url: https://pipettox.shinyapps.io/aflibercept/
 version: 1
 asMultiple: FALSE

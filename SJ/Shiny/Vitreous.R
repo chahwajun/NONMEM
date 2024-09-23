@@ -11,11 +11,11 @@ sidebar <- card(
   checkboxGroupInput("regimen", label = NULL, choices = list("Single Dose"=1,"Multiple Dose"=2), selected = 1),
   conditionalPanel(
     condition = "input.regimen == 1",
-    sliderInput("dose1", label = "Dose (mg)", step = 0.1, min=0, max = 5, value = 50, width = "100%")
+    sliderInput("dose1", label = "Dose (mg)", step = 0.01, min=0, max = 3, value = 1, width = "100%")
   ),
   conditionalPanel(
     condition = "input.regimen == 2",
-    sliderInput("dose2", label = "Dose (mg)",step = 0.1, min=0, max = 5, value = 50, width = "100%"),
+    sliderInput("dose2", label = "Dose (mg)",step = 0.01, min=0, max = 3, value = 1, width = "100%"),
     sliderInput("time2", label = "Number of Dose", step = 1, min = 1, max = 100, value = 50, width = "100%"),
     sliderInput("interval2", label = "Interval (h)", step = 1, min = 1, max = 1344, value = 100, width = "100%")
   ),
@@ -145,7 +145,7 @@ server <- function(input, output, session) {
       plot+ geom_point(data= obs_data(), aes(x = DAY, y= DV, color=GROUP), alpha = 0.5) +
         scale_color_manual(values = c("Median Concentration"="cyan4"))+ 
         geom_line(data = data$obs_tidy, aes(x = DAY, y = DV, group=GROUP), color = "darkred")+
-        scale_y_log10() 
+        scale_y_continuous(trans = "log10") 
     }
   })
 }
