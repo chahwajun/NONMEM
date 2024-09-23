@@ -1,0 +1,66 @@
+================================================================================
+Drug:              [Not entered] 
+Protocol:          [Not entered] 
+Run:               1_7           
+Description:       [Not entered] 
+Project notes:     [Not entered] 
+Run notes:         [None entered]
+Report created by: CHA           
+--------------------------------------------------------------------------------
+Description:       SB vitreous with IIV V without error
+Model file:        1_7.ctl                             
+Output file:       1_7.out                             
+Reference model:   1                                   
+Model author:                                          
+NM version Pirana:                                     
+NM info:           version 7.5.1                       
+Run on machine:    [unknown]                           
+Output file date:  2024-09-19, 17:17:26                
+Run started:       -                                   
+Run finished:      -                                   
+Table files:       sdtab7, patab7                      
+Attached folders:                                      
+MSFO file:                                             
+--------------------------------------------------------------------------------
+Subroutines:      ADVAN1 TRANS2                                         
+Methods:          #1 First Order Conditional Estimation with Interaction
+Dataset:          SB.csv                                                
+  Dataset IGNORE: -                                                     
+  Dataset ACCEPT: -                                                     
+# individuals:     40                                                   
+# observations:    39                                                   
+AIC               679.081                                               
+BIC               684.072                                               
+
+
+Estimation results: #1 First Order Conditional Estimation with Interaction
+--------------------------------------------------------------------------
+Objective function value: 601.404                                                                  
+Termination message:      minimization successful                                                  
+                          however, problems occurred with the minimization.                        
+                          regard the results of the estimation step carefully, and accept them only
+                          after checking that the covariance step produces reasonable output.      
+                          no. of function evaluations used:     2906                               
+                          no. of sig. digits in final est.:  3.0                                   
+Checks:                   No boundary problems reported by NONMEM                                  
+                          All gradients non-zero during estimation                                 
+Condition number:         119.27                                                                   
+
+
+Parameter estimates
+-------------------
+Theta | Description                       | Estimate | FIX | SE       | RSE  | 95%CI             | [lower,  | init,  | upper] | 
+1     | CL                                | 5.63E-06 | -   | 4.29E-07 | 7.6% | 4.79E-06-6.47E-06 | 0        | 4E-06  | +Inf   | 
+2     | V                                 | 0.000819 | -   | 7.68E-05 | 9.4% | 0.000668-0.00097  | 0        | 0.0004 | +Inf   | 
+3     | Additive Residual Variability     | 1E-06    | FIX | 0        | 0%   | 1E-06-1E-06       | 1E-06    | 1E-06  | 1E-06  | 
+4     | Proportional Residual Variability | 1E-06    | FIX | 0        | 0%   | 1E-06-1E-06       | 1E-06    | 1E-06  | 1E-06  | 
+
+Omega | Description | Estimate | SE     | RSE   | Etabar            | p val  | Shrinkage | 
+2,2   | .           | 0.0167   | 0.0047 | 28.1% | 0.000604 (0.0207) | 0.9767 | 0.1%      | 
+
+Sigma | Description | Estimate | SE | RSE | Shrinkage | 
+1,1   | .           | 1        | .  | .   | 100%      | 
+
+--------------------------------------------------------------------------------
+Report generated 2024-09-20, 09:58:20 on DESKTOP-ASKKO42
+================================================================================

@@ -1,0 +1,7 @@
+TABLE NO.     1: First Order Conditional Estimation with Interaction: Problem=1 Subproblem=0 Superproblem1=0 Iteration1=0 Superproblem2=0 Iteration2=0
+ ITERATION    GRD(1)       GRD(2)       GRD(3)       GRD(4)
+            0 -3.61821E+03  2.56109E+03 -1.61527E+03 -9.69308E+02
+           10 -2.65299E+02  2.09220E+02  2.03076E+02  5.72683E+01
+           20 -3.04687E+02  2.47259E+02 -1.55764E+02  5.03971E+01
+           30  2.38859E+01 -1.67914E+01 -7.65954E+01  1.23814E+00
+           34  1.74438E-01 -1.51258E-01  4.24653E-01 -3.68586E-02

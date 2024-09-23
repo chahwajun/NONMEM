@@ -1,0 +1,65 @@
+================================================================================
+Drug:              [Not entered]
+Protocol:          [Not entered]
+Run:               1_5          
+Description:       [Not entered]
+Project notes:     [Not entered]
+Run notes:         5            
+Report created by: CHA          
+--------------------------------------------------------------------------------
+Description:       SB vitreous with IIV CL
+Model file:        1_5.ctl                
+Output file:       1_5.out                
+Reference model:   1                      
+Model author:                             
+NM version Pirana:                        
+NM info:           version 7.5.1          
+Run on machine:    [unknown]              
+Output file date:  2024-09-19, 16:59:47   
+Run started:       -                      
+Run finished:      -                      
+Table files:       sdtab5, patab5         
+Attached folders:                         
+MSFO file:                                
+--------------------------------------------------------------------------------
+Subroutines:      ADVAN1 TRANS2                                         
+Methods:          #1 First Order Conditional Estimation with Interaction
+Dataset:          SB.csv                                                
+  Dataset IGNORE: -                                                     
+  Dataset ACCEPT: -                                                     
+# individuals:     40                                                   
+# observations:    39                                                   
+AIC               677.109                                               
+BIC               683.763                                               
+
+
+Estimation results: #1 First Order Conditional Estimation with Interaction
+--------------------------------------------------------------------------
+Objective function value: 597.432                                      
+Termination message:      minimization terminated                      
+                          due to rounding errors (error=134)           
+                          no. of function evaluations used:      780   
+                          no. of sig. digits unreportable              
+                          0parameter estimate is near its boundary     
+Checks:                   Boundary problem reported by NONMEM!         
+                          Zero gradients encountered during estimation!
+Condition number:         na                                           
+
+
+Parameter estimates
+-------------------
+Theta | Description                       | Estimate | FIX | SE | RSE | 95%CI | [lower,  | init,  | upper] | 
+1     | CL                                | 6.19E-06 | -   | .  | .   | .     | 0        | 4E-06  | +Inf   | 
+2     | V                                 | 0.000925 | -   | .  | .   | .     | 0        | 0.0004 | +Inf   | 
+3     | Additive Residual Variability     | 1E-06    | FIX | .  | .   | .     | 1E-06    | 1E-06  | 1E-06  | 
+4     | Proportional Residual Variability | 0.005    | -   | .  | .   | .     | 0        | 0.5    | +Inf   | 
+
+Omega | Description | Estimate | SE | RSE | Etabar            | p val  | Shrinkage | 
+1,1   | .           | 0.00954  | .  | .   | 0.000395 (0.0156) | 0.9798 | 0.1%      | 
+
+Sigma | Description | Estimate | SE | RSE | Shrinkage | 
+1,1   | .           | 1        | .  | .   | 98.5%     | 
+
+--------------------------------------------------------------------------------
+Report generated 2024-09-20, 09:58:19 on DESKTOP-ASKKO42
+================================================================================

@@ -374,7 +374,7 @@ ggplot() + geom_point(data = Ksyn,aes(x = log_weight, y = log_GEF, color=Group))
   geom_point(human, aes(x = Log_weight, y = Log_GEF))
 
 
-# SB NONMEM dataset ----
+# SB NONMEM dataset Vitreous ----
 SB_datset <- read_csv("SJ/rawdata/FN_240830_Total dataset.csv",col_types = "c") |> 
   filter(GROUP %in% c("G10", "G11")) |> 
   mutate(across(-c(1,5), as.double),
@@ -405,11 +405,43 @@ dosing <- tibble(
   group_by(ID) |> 
   arrange(ID, TIME, IDD) |> 
    write_csv("SJ/SB_NONMEM/SB.csv", na = ".")
+
  
- # SB NCA
+# SB NONMEM dataset Aqueous ----
+library(tidyverse)
+aq <- read_csv("SJ/rawdata/FN_240830_Total dataset.csv",col_types = "c") |> 
+  filter(GROUP %in% c("G10", "G11") & SITE == 1) |> 
+  mutate(IDD = ID) |> 
+  separate(ID, into = c("ERA", "ID"), sep = 2 ) |> 
+  mutate(ID = ifelse(ERA =="1B", as.double(ID)+100, as.double(ID)),
+         ID = ifelse(LEFT ==1, ID, ID+10),
+         CMT = 1, AMT = NA
+         ) |> 
+  arrange(ID) |> 
+  select(ID, TIME,DV, MDV, CMT,AMT, GROUP, LEFT, SITE, DAY, WEEK, IDD)
+
+dosing <- tibble(
+  ID = aq$ID,
+  TIME = 0, 
+  DV = NA, 
+  MDV = 1,
+  CMT =1, 
+  AMT = rep(c(0.6,1.2), each = 20),
+  GROUP = rep(c("G10", "G11"), each=20),
+  LEFT = rep(c(0,1),each=1, times=20),
+  SITE =1, DAY = 0 , WEEK= 0, IDD = aq$IDD
+)
+
+bind_rows(aq, dosing) |> 
+  group_by(ID) |> 
+  arrange(ID, TIME, IDD) |> 
+  write_csv("SJ/SB_NONMEM/Aqueous/aqueous.csv", na=".")
+
+# SB NCA ----
  library(tidyverse)
  library(NonCompart)
  library(ncar)
+#VIT
  SB_NCA <- read_csv("SJ/rawdata/FN_240830_Total dataset.csv",col_types = "c") |> 
    filter(GROUP %in% c("G10", "G11")) |> 
    mutate(across(-c(1,5), as.double),
@@ -422,4 +454,12 @@ dosing <- tibble(
  
  pdfNCA("SJ/HJ_data/SB_NCA.pdf",SB_NCA,key = "GROUP", colTime = "TIME",
         colConc = "CONC", adm = "Bolus", dose = 0.6, doseUnit = "mg",timeUnit = "h",concUnit = "ng/mL",R2ADJ = -1)
+ 
+ aq_NCA <- read_csv("SJ/SB_NONMEM/Aqueous/aqueous.csv") |> 
+   filter(MDV == 0) |> 
+   mutate(DV = as.double(DV)) |> 
+   group_by(GROUP, TIME) |> 
+   summarise(CONC = mean(DV)) |> 
+   tblNCA(key = "GROUP", colTime = "TIME", colConc = "CONC", adm = "Bolus", 
+          dose = 0.6, doseUnit = "mg",timeUnit = "h",concUnit = "ng/mL",R2ADJ = -1)
  

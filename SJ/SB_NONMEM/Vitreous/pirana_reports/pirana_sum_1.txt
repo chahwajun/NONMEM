@@ -1,0 +1,63 @@
+================================================================================
+Drug:              [Not entered]
+Protocol:          [Not entered]
+Run:               1            
+Description:       [Not entered]
+Project notes:     [Not entered]
+Run notes:         1            
+Report created by: CHA          
+--------------------------------------------------------------------------------
+Description:       SB vitreous         
+Model file:        1.ctl               
+Output file:       1.out               
+Reference model:   -                   
+Model author:                          
+NM version Pirana:                     
+NM info:           version 7.5.1       
+Run on machine:    [unknown]           
+Output file date:  2024-09-17, 18:52:26
+Run started:       -                   
+Run finished:      -                   
+Table files:       sdtab1, patab1      
+Attached folders:                      
+MSFO file:                             
+--------------------------------------------------------------------------------
+Subroutines:      ADVAN1 TRANS2                                         
+Methods:          #1 First Order Conditional Estimation with Interaction
+Dataset:          SB.csv                                                
+  Dataset IGNORE: -                                                     
+  Dataset ACCEPT: -                                                     
+# individuals:     40                                                   
+# observations:    39                                                   
+AIC               691.975                                               
+BIC               696.966                                               
+
+
+Estimation results: #1 First Order Conditional Estimation with Interaction
+--------------------------------------------------------------------------
+Objective function value: 614.298                                   
+Termination message:      minimization successful                   
+                          no. of function evaluations used:      158
+                          no. of sig. digits in final est.:  3.5    
+Checks:                   No boundary problems reported by NONMEM   
+                          All gradients non-zero during estimation  
+Condition number:         253.77                                    
+
+
+Parameter estimates
+-------------------
+Theta | Description                       | Estimate | FIX | SE       | RSE   | 95%CI             | [lower,  | init,  | upper] | 
+1     | CL                                | 7.07E-06 | -   | 8.37E-07 | 11.8% | 5.43E-06-8.71E-06 | 0        | 4E-06  | +Inf   | 
+2     | V                                 | 0.00111  | -   | 0.000167 | 15%   | 0.000783-0.00144  | 0        | 0.0004 | +Inf   | 
+3     | Additive Residual Variability     | 1E-06    | FIX | 0        | 0%    | 1E-06-1E-06       | 1E-06    | 1E-06  | 1E-06  | 
+4     | Proportional Residual Variability | 0.551    | -   | 0.0756   | 13.7% | 0.403-0.699       | 0        | 0.1    | +Inf   | 
+
+Omega | Description | Estimate | SE | RSE | Etabar | p val | Shrinkage | 
+
+Sigma | Description | Estimate | SE | RSE | Shrinkage | 
+1,1   | .           | 1        | .  | .   | 0.1%      | 
+2,2   | .           | 1        | .  | .   | 100%      | 
+
+--------------------------------------------------------------------------------
+Report generated 2024-09-20, 09:58:19 on DESKTOP-ASKKO42
+================================================================================
