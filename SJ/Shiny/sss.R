@@ -5,7 +5,7 @@ library(rxode2)
 library(nonmem2rx)
 library(plotly)
 
-model <- nonmem2rx("SB15_V32.out")
+model <- nonmem2rx("1_9.out")
 
 sidebar <- card(
   card_title("Simulation Regimen"),
@@ -31,7 +31,8 @@ sidebar <- card(
 body <- card(
   card_title("Simulation Plot"),
   plotlyOutput("simlationplot"),
-  plotlyOutput("logsimulationplot")
+  plotOutput("logsimulationplot"),
+  tableOutput("table1")
 )
 
 ui <- page_navbar(
@@ -50,11 +51,11 @@ server <- function(input, output, session) {
   obs_data <- reactive({
     file <- input$file1
     if (is.null(file)) {
-      return(data.frame(WEEK = numeric(0), DV = numeric(0), GROUP = character(0)))
+      return(data.frame(DAY = numeric(0), DV = numeric(0), GROUP = character(0)))
     }
     ext <- tools::file_ext(file$datapath)
     data <- read.csv(file$datapath, header = TRUE)
-  }) 
+  })
   
   dosing <- eventReactive(input$simulate, {
     if (input$regimen == 1) {
@@ -63,8 +64,8 @@ server <- function(input, output, session) {
         add.sampling(seq(0, 24 * 7 * 16, by = 24))
     } else if (input$regimen == 2) {
       eventTable(amount.units = "mg", time.units = "hr") |>
-        add.dosing(dose = as.double(input$dose2), nbr.doses = as.double(input$time2), dosing.interval = as.double(input$interval2),start.time = 0) |>
-        add.sampling(seq(0, (input$time2*input$interval2+ 24*7), by = 24))
+        add.dosing(dose = as.double(input$dose2), nbr.doses = as.double(input$time2), dosing.interval = as.double(input$interval2)) |>
+        add.sampling(seq(0, input$time2*input$interval2, by = 24))
     }
   })
   
@@ -72,7 +73,7 @@ server <- function(input, output, session) {
     rxSolve(model, dosing(), nSub = 500)
   })
   
-  simulation_data <- reactive({
+  simulation_data <- reactive( {
     results <- rxsolve()
     obs <- obs_data()
     iqr <- results |>
@@ -89,62 +90,66 @@ server <- function(input, output, session) {
       mutate(day = time / 24)
     
     obs_tidy <- obs |> 
-      group_by(WEEK, GROUP) |> 
+      group_by(DAY, GROUP) |> 
       summarize(DV = mean(DV)
-                )
+      )
     list(iqr = iqr, median = median, obs_tidy=obs_tidy, obs= obs)
   })
   
   output$simlationplot <- renderPlotly({
-
+    
     data <- simulation_data()
     
     plot <- ggplot() +
       geom_ribbon(data = data$iqr, aes(x = day/7, ymin = ipred_min, ymax = ipred_max),fill = "#337AB7" , alpha = 0.3) +
       geom_line(data = data$median, aes(x = day/7, y = ipred_median, color = "Median Concentration")) + theme_bw() +
-      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL) + 
+      labs(x = "Time (Day)", y = "Aflibercept Concentration (ng/mL)", color = NULL) + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
             axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
             legend.title = element_text(size = 12)
-      ) + scale_x_continuous(breaks = seq(0, ((input$time2*input$interval2)+24*7)/7, by = 2), limits = c(0,NA)) +
+      ) + scale_x_continuous(breaks = seq(0, (input$time2*input$interval2)+240, by = 7), limits = c(0,NA)) +
       scale_color_manual(values = c("Median Concentration"="cyan4")) 
     
-
-     if(!(is.null(input$file1))) {
-      plot <- plot+ geom_point(data= data$obs, aes(x = WEEK, y= DV, group=GROUP), alpha = 0.2) +
-        geom_line(data = data$obs_tidy, aes(x = WEEK, y = DV, group=GROUP), color = "darkred")+
+    if (is.null(input$file1)) {
+      ggplotly(plot) 
+    }
+    else if(!(is.null(input$file1))) {
+      plot+ geom_point(data= data$obs, aes(x = DAY, y= DV, group=GROUP), alpha = 0.2) +
+        geom_line(data = data$obs_tidy, aes(x = DAY, y = DV, group=GROUP), color = "darkred")+
         scale_color_manual(values = c("Median Concentration"="cyan4"))
-     }
-    plot <- ggplotly(plot)
-      
+    }
+    
   })
   
-  output$logsimulationplot <- renderPlotly({
+  output$logsimulationplot <- renderPlot({
     data <- simulation_data()
     
     plot <- ggplot() +
-      geom_ribbon(data = data$iqr, aes(x = day/7, ymin = ipred_min, ymax = ipred_max),fill = "#337AB7" , alpha = 0.3) +
-      geom_line(data = data$median, aes(x = day/7, y = ipred_median, color = "Median Concentration")) + theme_bw() +
-      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL) + 
+      geom_ribbon(data = data$iqr, aes(x = day, ymin = ipred_min, ymax = ipred_max),fill = "#337AB7" , alpha = 0.3) +
+      geom_line(data = data$median, aes(x = day, y = ipred_median, color = "Median Concentration")) + theme_bw() +
+      labs(x = "Time (Day)", y = "Aflibercept Concentration (ng/mL)", color = NULL) + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
             axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
             legend.title = element_text(size = 12)
-      ) + scale_x_continuous(breaks = seq(0, ((input$time2*input$interval2)+24*7)/7, by = 2), limits = c(0,NA)) +
-      scale_color_manual(values = c("Median Concentration"="cyan4")) +  scale_y_log10()
+      ) + scale_x_continuous(breaks = seq(0, (input$time2*input$interval2)+240, by = 7), limits = c(0,NA)) +
+      scale_color_manual(values = c("Median Concentration"="cyan4")) 
     
- 
-     if(!(is.null(input$file1))) {
-      plot <- plot+ geom_point(data= obs_data(), aes(x = WEEK, y= DV, color=GROUP), alpha = 0.5) +
+    if (is.null(input$file1)) {
+      plot +  scale_y_log10() 
+      
+    }
+    else if(!(is.null(input$file1))) {
+      plot+ geom_point(data= obs_data(), aes(x = DAY, y= DV, color=GROUP), alpha = 0.5) +
         scale_color_manual(values = c("Median Concentration"="cyan4"))+ 
-        geom_line(data = data$obs_tidy, aes(x = WEEK, y = DV, group=GROUP), color = "darkred") + scale_y_log10()
-     }
-    plot <- ggplotly(plot)
-    
+        geom_line(data = data$obs_tidy, aes(x = DAY, y = DV, group=GROUP), color = "darkred")+
+        scale_y_continuous(trans = "log10") 
+    }
   })
+  
   output$dosing <- renderTable({
     dosing()
   })
