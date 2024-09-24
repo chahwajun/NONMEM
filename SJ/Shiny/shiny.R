@@ -5,7 +5,7 @@ library(rxode2)
 library(nonmem2rx)
 library(plotly)
 
-model <- nonmem2rx("VARS_902.out")
+model <- nonmem2rx("VARS_904.out")
 
 sidebar <- card(
   checkboxGroupInput("bolusinfusion", label = "Infusion/Bolus", choices = list("Bolus"=1, "Infusion"=2), selected = 1
