@@ -1,5 +1,6 @@
-toplot <- function(data, site, concentration, title_name) {
-  plot <- ggplot(data = data[[site]], aes_string(x = "day/7", y = concentration)) +
+toplot <- function(data1, site, concentration, title_name,input) {
+  
+  plot <- ggplot(data = data1$site, aes(x = day/7, y = concentration)) +
     geom_line(color = "#337AB7") +
     theme_bw() +
     labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", title = title_name) + 
