@@ -441,7 +441,7 @@ bind_rows(aq, dosing) |>
  library(tidyverse)
  library(NonCompart)
  library(ncar)
-#VIT
+#VIT ----
  SB_NCA <- read_csv("SJ/rawdata/FN_240830_Total dataset.csv",col_types = "c") |> 
    filter(GROUP %in% c("G10", "G11")) |> 
    mutate(across(-c(1,5), as.double),
@@ -463,3 +463,34 @@ bind_rows(aq, dosing) |>
    tblNCA(key = "GROUP", colTime = "TIME", colConc = "CONC", adm = "Bolus", 
           dose = 0.6, doseUnit = "mg",timeUnit = "h",concUnit = "ng/mL",R2ADJ = -1)
  
+ 
+ 
+#240925 SERUM CL ----
+library(NonCompart)
+ 
+SERUM <- read_csv("SJ/rawdata/복사본 ★ S24008_Final Resul_보고서용_240527.csv") |> 
+  fill(1, .direction = "down") |> 
+  slice(c(889:908)) |> 
+  select(GROUP=1,  2,6) |> 
+  fill(2, .direction = "down") |> 
+  separate(2, into = c("DAY", "TIME"), sep = 3) |> 
+  mutate(TIME = as.double(TIME)) |> 
+  select(1,3,4) |> 
+  mutate(DAY = TIME, 
+         TIME = (TIME-1)*24,
+         DV = as.double(`...6`),
+         DV = ifelse(is.na(DV), 0, DV),
+         DV = ifelse(DV<=5, 0, DV)
+         ) |> 
+  group_by(GROUP,TIME) |> 
+  summarize(CONC = mean(DV))
+
+ NCA_SERUM_0.6 <- tblNCA(key = "GROUP",SERUM,colTime = "TIME",colConc = "CONC",dose = 1.2,adm = "Bolus",doseUnit = "mg",timeUnit = "h",concUnit = "ng/mL",R2ADJ = -1
+                     ) |> 
+   filter(GROUP =="G10" )
+ NCA_SERUM_1.2 <- tblNCA(key = "GROUP",SERUM,colTime = "TIME",colConc = "CONC",dose = 2.4,adm = "Bolus",doseUnit = "mg",timeUnit = "h",concUnit = "ng/mL",R2ADJ = -1
+ ) |> 
+   filter(GROUP =="G11")
+ 
+ bind_rows(NCA_SERUM_0.6, NCA_SERUM_1.2) |> 
+   write_csv("SJ/NCA/AFIBERCEPT_SERUM_NCA.csv")
