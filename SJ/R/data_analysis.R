@@ -503,3 +503,83 @@ library(NonCompart)
  
 pdfNCA("SJ/NCA/NCA_0.6mg.pdf",key = "GROUP",SERUM,colTime = "TIME",colConc = "CONC",dose = 1.2,adm = "Bolus",doseUnit = "mg",timeUnit = "h",concUnit = "ng/mL",R2ADJ = -1 )
 pdfNCA("SJ/NCA/NCA_1.2mg.pdf",key = "GROUP",SERUM,colTime = "TIME",colConc = "CONC",dose = 2.4,adm = "Bolus",doseUnit = "mg",timeUnit = "h",concUnit = "ng/mL",R2ADJ = -1 )
+
+
+
+
+
+# gene count NCA ----
+library(tidyverse)
+library(NonCompart)
+library(readxl)
+gc <- read_xlsx("SJ/rawdata/K24027-qPCR AAV DNA result (2-8주차).xlsx", sheet = 2, skip = 3) |> 
+  slice(c(82:101)) |> 
+  fill(c(1,2), .direction = "down") |> 
+  separate(2, into = c("ERASE", "DAY"), sep = 3) |> 
+  select(-2) |> 
+  separate(1, into = c("GROUP", "DOSE"), sep=3) |> 
+  mutate(GROUP = as.double(GROUP)) |> 
+  fill(1, .direction = "up") |> 
+  select(-2) |> 
+  pivot_longer(cols = c(4:15), names_to = "SITE", values_to = "DV") |> 
+  separate(SITE, into = c("SITE", "LEFT"),sep = "-") |> 
+  mutate(LEFT = ifelse(LEFT == "L",1,0),
+         DAY = as.double(DAY),
+         TIME = (DAY-1)*24,
+         WEEK = (DAY-1)/7
+         ) |> 
+  rename(ID = `...3`) |> 
+  select(ID, TIME, DV, GROUP, SITE,LEFT,DAY,WEEK) |> 
+  mutate(ID3 = ID) |> 
+  separate(ID, into = c("IDD", "ID2"), sep = 2) |> 
+  select(-1) |> 
+  mutate(ID = as.double(ID2),.before=1) |> 
+  select(-2)
+gc |> 
+  write_csv("SJ/NCA/GC_NCA.csv")
+
+
+
+#SITE (1:aq, 2:vit, 3:iris, 4:retina, 5:choroid, 6:optic nerve, 7:serum)
+gc1 <- gc |> 
+  filter( SITE == "Aq") |> 
+  group_by(GROUP,TIME ,SITE) |> 
+  summarize(CONC = mean(DV))
+gc2 <- gc |> 
+  filter( SITE =="Vi") |> 
+  group_by(GROUP,TIME ,SITE) |> 
+  summarize(CONC = mean(DV))
+gc3 <- gc |> 
+  filter( SITE =="Ir") |> 
+  group_by(GROUP,TIME ,SITE) |> 
+  summarize(CONC = mean(DV))
+gc4 <- gc |> 
+  filter(SITE =="Re") |> 
+  group_by(GROUP,TIME ,SITE) |> 
+  summarize(CONC = mean(DV))
+gc5 <- gc |> 
+  filter(SITE =="Ch") |> 
+  group_by(GROUP,TIME ,SITE) |> 
+  summarize(CONC = mean(DV))
+gc6 <- gc |> 
+  filter( SITE =="Op") |> 
+  group_by(GROUP,TIME ,SITE) |> 
+  summarize(CONC = mean(DV))
+
+
+g10 <- bind_rows(gc1,gc2,gc3,gc4,gc5,gc6) |> 
+  filter(GROUP == 1.2) |> 
+  ungroup()
+
+g11 <- bind_rows(gc1,gc2,gc3,gc4,gc5,gc6) |> 
+  filter(GROUP == 2.4) |> 
+  ungroup()
+
+NCA_g10 <- tblNCA(g10, key = "SITE", colTime = "TIME", colConc = "CONC",dose = 0.6, adm = "Bolus",doseUnit = "mg",timeUnit = "h",concUnit = "ng/mL",R2ADJ = -1) |> 
+  as_tibble() |> 
+  write_csv("SJ/NCA/GC_NCA_Results1.csv")
+NCA_g11 <- tblNCA(g11, key = "SITE", colTime = "TIME", colConc = "CONC",dose = 1.2, adm = "Bolus",doseUnit = "mg",timeUnit = "h",concUnit = "ng/mL",R2ADJ = -1) |> 
+  as_tibble() |> 
+  write_csv("SJ/NCA/GC_NCA_Results2.csv")
+
+
