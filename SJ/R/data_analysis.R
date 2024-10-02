@@ -583,3 +583,13 @@ NCA_g11 <- tblNCA(g11, key = "SITE", colTime = "TIME", colConc = "CONC",dose = 1
   write_csv("SJ/NCA/GC_NCA_Results2.csv")
 
 
+
+###### 
+library(tidyverse)
+raw <- read_csv("SJ/rawdata/FN_240830_Total dataset.csv") |> 
+  filter(GROUP %in% c("G10", "G11") ) |> 
+  filter(SITE !=5) |> 
+  write_csv("SJ/Shiny/example3.csv")
+
+
+

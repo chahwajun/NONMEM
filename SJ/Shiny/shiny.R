@@ -5,7 +5,7 @@ library(rxode2)
 library(nonmem2rx)
 library(plotly)
 
-model <- nonmem2rx("VARS_904.out")
+model <- nonmem2rx("OI_190.out")
 
 sidebar <- card(
   checkboxGroupInput("bolusinfusion", label = "Infusion/Bolus", choices = list("Bolus"=1, "Infusion"=2), selected = 1
@@ -38,23 +38,29 @@ sidebar <- card(
 )
 
 body1 <- layout_columns(
-  col_widths = c(6,6,12),
+  col_widths = c(4,4,4,12),
   card(plotlyOutput("simlationplot1"),
        plotlyOutput("simlationplot3")
        ),
   card(plotlyOutput("simlationplot2"),
        plotlyOutput("simlationplot4")
+  ),
+  card(plotlyOutput("simlationplot5"),
+       plotlyOutput("simlationplot6")
   )
   
 )
 
 body2 <- layout_columns(
-  col_widths = c(6,6,12),
+  col_widths = c(4,4,4,12),
   card(plotlyOutput("simlationplotlog1"),
        plotlyOutput("simlationplotlog3")
   ),
   card(plotlyOutput("simlationplotlog2"),
        plotlyOutput("simlationplotlog4")
+  ),
+  card(plotlyOutput("simlationplotlog5"),
+       plotlyOutput("simlationplotlog6")
   )
   
 )
@@ -131,6 +137,14 @@ server <- function(input, output, session) {
       select(time, scale4, SERUM)|> 
       mutate(day = time/24)
     
+    IRIS <- results |> 
+      select(time, scale6, IRIS)|> 
+      mutate(day = time/24)
+    
+    OPT <- results |> 
+      select(time, scale5, OPT)|> 
+      mutate(day = time/24)
+    
     obs1 <- obs |> 
       filter(SITE ==2)
     obs2 <- obs |> 
@@ -139,6 +153,10 @@ server <- function(input, output, session) {
       filter(SITE ==4)
     obs4 <- obs |> 
       filter(SITE ==7)
+    obs5 <- obs |> 
+      filter(SITE ==6)
+    obs6 <- obs |> 
+      filter(SITE ==3)
     
     obs_tidy1 <- obs1 |> 
       group_by(WEEK, GROUP) |> 
@@ -156,11 +174,19 @@ server <- function(input, output, session) {
       group_by(WEEK, GROUP) |> 
       summarize(DV = mean(DV)
       )
+    obs_tidy5 <- obs5 |> 
+      group_by(WEEK, GROUP) |> 
+      summarize(DV = mean(DV)
+      )
+    obs_tidy6 <- obs6 |> 
+      group_by(WEEK, GROUP) |> 
+      summarize(DV = mean(DV)
+      )
     
     
-    list(VIT = VIT, AQ = AQ, RET=RET, SERUM=SERUM, 
-         obs_tidy1=obs_tidy1,obs_tidy2=obs_tidy2,obs_tidy3=obs_tidy3,obs_tidy4=obs_tidy4,
-         obs1= obs1,obs2= obs2,obs3= obs3,obs4= obs4)
+    list(VIT = VIT, AQ = AQ, RET=RET, SERUM=SERUM, IRIS=IRIS, OPT=OPT,
+         obs_tidy1=obs_tidy1,obs_tidy2=obs_tidy2,obs_tidy3=obs_tidy3,obs_tidy4=obs_tidy4,obs_tidy5=obs_tidy5,obs_tidy6=obs_tidy6,
+         obs1= obs1,obs2= obs2,obs3= obs3,obs4= obs4,obs5= obs5,obs6= obs6)
   })
   
   output$simlationplot1 <- renderPlotly({
@@ -247,6 +273,48 @@ server <- function(input, output, session) {
     if(!(is.null(input$file1))) {
       plot <- plot + geom_point(data = data$obs4, aes(x = WEEK, y = DV, color = GROUP), alpha = 0.5) +
         geom_line(data = data$obs_tidy4, aes(x = WEEK, y = DV, group = GROUP, color = GROUP)) 
+    }
+    plot <- ggplotly(plot)
+  })
+  output$simlationplot5 <- renderPlotly({
+    
+    data <- simulation_data()
+    
+    plot <- ggplot() +
+      geom_line(data = data$OPT, aes(x = day/7, y = OPT/scale5), color = "#337AB7") + theme_bw() +
+      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL, title="Optic Nerve") + 
+      theme(axis.text.x = element_text(vjust = 0.5, size = 12),
+            axis.text.y = element_text(vjust = 0.5, size = 12),
+            axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+            axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+            legend.title = element_text(size = 12)
+      ) + scale_x_continuous(breaks = seq(0, ((input$time2*input$interval2)+24*7)/7, by = 2), limits = c(0,NA)) +
+      geom_hline(yintercept = input$hline, color = "darkred")
+    
+    if(!(is.null(input$file1))) {
+      plot <- plot + geom_point(data = data$obs5, aes(x = WEEK, y = DV, color = GROUP), alpha = 0.5) +
+        geom_line(data = data$obs_tidy5, aes(x = WEEK, y = DV, group = GROUP, color = GROUP)) 
+    }
+    plot <- ggplotly(plot)
+  })
+  output$simlationplot6 <- renderPlotly({
+    
+    data <- simulation_data()
+    
+    plot <- ggplot() +
+      geom_line(data = data$IRIS, aes(x = day/7, y = IRIS/scale6), color = "#337AB7") + theme_bw() +
+      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL, title="Iris") + 
+      theme(axis.text.x = element_text(vjust = 0.5, size = 12),
+            axis.text.y = element_text(vjust = 0.5, size = 12),
+            axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+            axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+            legend.title = element_text(size = 12)
+      ) + scale_x_continuous(breaks = seq(0, ((input$time2*input$interval2)+24*7)/7, by = 2), limits = c(0,NA)) +
+      geom_hline(yintercept = input$hline, color = "darkred")
+    
+    if(!(is.null(input$file1))) {
+      plot <- plot + geom_point(data = data$obs6, aes(x = WEEK, y = DV, color = GROUP), alpha = 0.5) +
+        geom_line(data = data$obs_tidy6, aes(x = WEEK, y = DV, group = GROUP, color = GROUP)) 
     }
     plot <- ggplotly(plot)
   })
@@ -342,6 +410,53 @@ server <- function(input, output, session) {
     }
     plot <- ggplotly(plot)
   })
+  output$simlationplotlog5 <- renderPlotly({
+    
+    data <- simulation_data()
+    
+    plot <- ggplot() +
+      geom_line(data = data$OPT, aes(x = day/7, y = OPT/scale5),color = "#337AB7") + theme_bw() +
+      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL, title = "Optic Nerve") + 
+      theme(axis.text.x = element_text(vjust = 0.5, size = 12),
+            axis.text.y = element_text(vjust = 0.5, size = 12),
+            axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+            axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+            legend.title = element_text(size = 12)
+      ) + scale_x_continuous(breaks = seq(0, ((input$time2*input$interval2)+24*7)/7, by = 2), limits = c(0,NA)) +
+      geom_hline(yintercept = input$hline, color = "darkred")+ scale_y_log10()
+    
+    
+    if(!(is.null(input$file1))) {
+      plot <- plot+ geom_point(data= data$obs5, aes(x = WEEK, y= DV, color=GROUP), alpha = 0.5) +
+        geom_line(data = data$obs_tidy5, aes(x = WEEK, y = DV, group=GROUP, color = GROUP)) + scale_y_log10()
+    }
+    plot <- ggplotly(plot)
+  })
+  output$simlationplotlog6 <- renderPlotly({
+    
+    data <- simulation_data()
+    
+    plot <- ggplot() +
+      geom_line(data = data$IRIS, aes(x = day/7, y = IRIS/scale6),color = "#337AB7") + theme_bw() +
+      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL, title = "Iris") + 
+      theme(axis.text.x = element_text(vjust = 0.5, size = 12),
+            axis.text.y = element_text(vjust = 0.5, size = 12),
+            axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+            axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+            legend.title = element_text(size = 12)
+      ) + scale_x_continuous(breaks = seq(0, ((input$time2*input$interval2)+24*7)/7, by = 2), limits = c(0,NA)) +
+      geom_hline(yintercept = input$hline, color = "darkred")+ scale_y_log10()
+    
+    
+    if(!(is.null(input$file1))) {
+      plot <- plot+ geom_point(data= data$obs6, aes(x = WEEK, y= DV, color=GROUP), alpha = 0.5) +
+        geom_line(data = data$obs_tidy6, aes(x = WEEK, y = DV, group=GROUP, color = GROUP)) + scale_y_log10()
+    }
+    plot <- ggplotly(plot)
+  })
+  
+  
+  
 }
 
 shinyApp(ui, server)

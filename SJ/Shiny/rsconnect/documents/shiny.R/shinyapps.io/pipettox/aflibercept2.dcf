@@ -5,9 +5,9 @@ account: pipettox
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 12804490
-bundleId: 9140838
+bundleId: 9144186
 url: https://pipettox.shinyapps.io/aflibercept2/
 version: 1
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: 1_9.out|example.csv|example2.csv|function.R|rxode2_model.rds|SB15_V32.out|shiny_zolpidem_final_240328.R|VARS_902.out|Vitreous.R
+ignoredFiles: 1_9.out|example.csv|example2.csv|function.R|rxode2_model.rds|SB15_V32.out|shiny_zolpidem_final_240328.R|VARS_902.out|VARS_904.out|Vitreous.R
