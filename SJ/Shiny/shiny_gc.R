@@ -9,6 +9,8 @@ source("model.R")
 
 sidebar <- card(
     textInput("dose1", label = "Dose (vg)",value = 300000000),
+    sliderInput("num", "Number of Dose", min = 1, max = 5, value = 3),
+    sliderInput("interval", "Dosing Interval (Month)", min=0, max = 60, value = 30),
     textInput("Intercept1", "Intercept",value = -1.47403),
     textInput("Slope1","Slope", value = 0.08019),
     verbatimTextOutput("Formula"),
@@ -17,7 +19,6 @@ sidebar <- card(
     h4("Calculated F"),
     verbatimTextOutput("F1"),
   actionButton("simulate", label = "Simulate"),
-  #sliderInput("hline","Target Concentration (ng/mL)", step=100, min =0, max=7000, value = 4000, width="100%"),
   hr(),
   h6("Observation Input"),
   fileInput("file1",label = "Observation"), 
@@ -75,7 +76,7 @@ server <- function(input, output, session) {
   dosing <- eventReactive(input$simulate, {
       eventTable(amount.units = "mg", time.units = "hr") |>
         add.dosing(dose = log(as.double(input$dose1)), nbr.doses = 1) |>
-        add.sampling(seq(0, 24 * 7 * 16, by = 24))
+        add.sampling(seq(0, as.double(input$num)*as.double(input$interval)*24*30*2, by = 1*24*30))
 
   })
   
@@ -91,19 +92,19 @@ server <- function(input, output, session) {
     
     VIT <- results |> 
       select(time, scale1, VIT) |> 
-      mutate(day = time/24)
+      mutate(month = time/(24*30))
     
     RET <- results |> 
       select(time, scale2, RET)|> 
-      mutate(day = time/24)
+      mutate(month = time/(24*30))
     
     IRIS <- results |> 
       select(time, scale4, IRIS)|> 
-      mutate(day = time/24)
+      mutate(month = time/(24*30))
     
     OPT <- results |> 
       select(time, scale3, OPT)|> 
-      mutate(day = time/24)
+      mutate(month = time/(24*30))
     
     obs1 <- obs |> 
       filter(SITE ==2)
@@ -118,19 +119,23 @@ server <- function(input, output, session) {
     obs_tidy1 <- obs1 |> 
       group_by(WEEK, GROUP) |> 
       summarize(DV = mean(DV)
-      )
+      ) |> 
+      mutate(month = WEEK/4)
     obs_tidy2 <- obs2 |> 
       group_by(WEEK, GROUP) |> 
       summarize(DV = mean(DV)
-      )
+      )|> 
+      mutate(month = WEEK/4)
     obs_tidy3 <- obs3 |> 
       group_by(WEEK, GROUP) |> 
       summarize(DV = mean(DV)
-      )
+      )|> 
+      mutate(month = WEEK/4)
     obs_tidy4 <- obs4 |> 
       group_by(WEEK, GROUP) |> 
       summarize(DV = mean(DV)
-      )
+      )|> 
+      mutate(month = WEEK/4)
 
   
     list(VIT = VIT, RET=RET,  IRIS=IRIS, OPT=OPT,
@@ -143,14 +148,14 @@ server <- function(input, output, session) {
     data <- simulation_data()
     
     plot <- ggplot() +
-      geom_line(data = data$VIT, aes(x = day/7, y = VIT/scale1), color = "#337AB7") + theme_bw() +
+      geom_line(data = data$VIT, aes(x = month, y = VIT/scale1), color = "#337AB7") + theme_bw() +
       labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Vitreous") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
             axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
             legend.title = element_text(size = 12)
-      ) + scale_x_continuous(breaks = seq(0, ((1344)+24*7)/7, by = 2), limits = c(0,NA)) +
+      ) + scale_x_continuous(breaks = seq(0, ), limits = c(0,NA)) +
       geom_hline(yintercept = input$hline, color = "darkred")
     
     if(!(is.null(input$file1))) {
@@ -165,7 +170,7 @@ server <- function(input, output, session) {
     data <- simulation_data()
     
     plot <- ggplot() +
-      geom_line(data = data$RET, aes(x = day/7, y = RET/scale2), color = "#337AB7") + theme_bw() +
+      geom_line(data = data$RET, aes(x = month, y = RET/scale2), color = "#337AB7") + theme_bw() +
       labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Retina") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
@@ -187,7 +192,7 @@ server <- function(input, output, session) {
     data <- simulation_data()
     
     plot <- ggplot() +
-      geom_line(data = data$OPT, aes(x = day/7, y = OPT/scale3), color = "#337AB7") + theme_bw() +
+      geom_line(data = data$OPT, aes(x = month, y = OPT/scale3), color = "#337AB7") + theme_bw() +
       labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Optic Nerve") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
@@ -208,7 +213,7 @@ server <- function(input, output, session) {
     data <- simulation_data()
     
     plot <- ggplot() +
-      geom_line(data = data$IRIS, aes(x = day/7, y = IRIS/scale4), color = "#337AB7") + theme_bw() +
+      geom_line(data = data$IRIS, aes(x = month, y = IRIS/scale4), color = "#337AB7") + theme_bw() +
       labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Iris") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
@@ -231,7 +236,7 @@ server <- function(input, output, session) {
     data <- simulation_data()
     
     plot <- ggplot() +
-      geom_line(data = data$VIT, aes(x = day/7, y = VIT/scale1),color = "#337AB7") + theme_bw() +
+      geom_line(data = data$VIT, aes(x = month, y = VIT/scale1),color = "#337AB7") + theme_bw() +
       labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Vitreous") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
@@ -254,7 +259,7 @@ server <- function(input, output, session) {
     data <- simulation_data()
     
     plot <- ggplot() +
-      geom_line(data = data$RET, aes(x = day/7, y = RET/scale2),color = "#337AB7") + theme_bw() +
+      geom_line(data = data$RET, aes(x = month, y = RET/scale2),color = "#337AB7") + theme_bw() +
       labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title = "Retina") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
@@ -278,7 +283,7 @@ server <- function(input, output, session) {
     data <- simulation_data()
     
     plot <- ggplot() +
-      geom_line(data = data$OPT, aes(x = day/7, y = OPT/scale3),color = "#337AB7") + theme_bw() +
+      geom_line(data = data$OPT, aes(x = month, y = OPT/scale3),color = "#337AB7") + theme_bw() +
       labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title = "Optic Nerve") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
@@ -300,7 +305,7 @@ server <- function(input, output, session) {
     data <- simulation_data()
     
     plot <- ggplot() +
-      geom_line(data = data$IRIS, aes(x = day/7, y = IRIS/scale4),color = "#337AB7") + theme_bw() +
+      geom_line(data = data$IRIS, aes(x = month, y = IRIS/scale4),color = "#337AB7") + theme_bw() +
       labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title = "Iris") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
