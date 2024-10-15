@@ -5,12 +5,13 @@ library(rxode2)
 library(nonmem2rx)
 library(plotly)
 
-#model <- nonmem2rx("GC_831.out")
+source("model.R")
 
 sidebar <- card(
     textInput("dose1", label = "Dose (vg)",value = 300000000),
     textInput("Intercept1", "Intercept",value = -1.47403),
     textInput("Slope1","Slope", value = 0.08019),
+    verbatimTextOutput("Formula"),
     h4("Dose (vg)"),
     verbatimTextOutput("Dose"),
     h4("Calculated F"),
@@ -19,7 +20,7 @@ sidebar <- card(
   #sliderInput("hline","Target Concentration (ng/mL)", step=100, min =0, max=7000, value = 4000, width="100%"),
   hr(),
   h6("Observation Input"),
-  fileInput("file1",label = "Observation"),
+  fileInput("file1",label = "Observation"), 
   hr()
 )
 
@@ -143,7 +144,7 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$VIT, aes(x = day/7, y = VIT/scale1), color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL, title="Vitreous") + 
+      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Vitreous") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
@@ -165,7 +166,7 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$RET, aes(x = day/7, y = RET/scale2), color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL, title="Retina") + 
+      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Retina") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
@@ -187,7 +188,7 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$OPT, aes(x = day/7, y = OPT/scale3), color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL, title="Optic Nerve") + 
+      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Optic Nerve") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
@@ -208,7 +209,7 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$IRIS, aes(x = day/7, y = IRIS/scale4), color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL, title="Iris") + 
+      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Iris") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
@@ -231,7 +232,7 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$VIT, aes(x = day/7, y = VIT/scale1),color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL, title="Vitreous") + 
+      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Vitreous") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
@@ -254,7 +255,7 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$RET, aes(x = day/7, y = RET/scale2),color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL, title = "Retina") + 
+      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title = "Retina") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
@@ -278,7 +279,7 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$OPT, aes(x = day/7, y = OPT/scale3),color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL, title = "Optic Nerve") + 
+      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title = "Optic Nerve") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
@@ -300,7 +301,7 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$IRIS, aes(x = day/7, y = IRIS/scale4),color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Aflibercept Concentration (ng/mL)", color = NULL, title = "Iris") + 
+      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title = "Iris") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
@@ -331,7 +332,10 @@ server <- function(input, output, session) {
   output$Dose <- renderPrint({
     req(input$dose1)
     num <- as.numeric(input$dose1)
-    format(num, scientific = TRUE)
+    paste(format(num, scientific = TRUE), "vg")
+  })
+  output$Formula <- renderPrint({
+    paste0("F","=","Intercept","+","Slope*LNDose")
   })
   
 }

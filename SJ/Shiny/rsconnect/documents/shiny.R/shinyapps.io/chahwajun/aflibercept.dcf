@@ -1,0 +1,13 @@
+name: aflibercept
+title: aflibercept
+username: chahwajun
+account: chahwajun
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13006106
+bundleId: 9219263
+url: https://chahwajun.shinyapps.io/aflibercept/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: 1_9.out|example.csv|example2.csv|example3.csv|function.R|GC_831.out|GC_VROI_1.csv|GC_VROI_1.csv.part|group2.csv|group3.csv|group4.csv|group5.csv|group6.csv|group7.csv|model.R|OI_190.out|rxode2_model.rds|SB15_V32.out|shiny_gc.R|shiny_zolpidem_final_240328.R|VARS_820.out|VARS_902.out|VARS_904.out|Vitreous.R
