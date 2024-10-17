@@ -8,11 +8,11 @@ library(plotly)
 source("model.R")
 
 sidebar <- card(
-    textInput("dose1", label = "Dose (vg)",value = 300000000),
+    textInput("dose1", label = "Dose (vg)",value = 100000000),
     sliderInput("num", "Number of Dose", min = 1, max = 5, value = 3),
     sliderInput("interval", "Dosing Interval (Month)", min=0, max = 60, value = 30),
-    textInput("Intercept1", "Intercept",value = -1.47403),
-    textInput("Slope1","Slope", value = 0.08019),
+    textInput("intercept1", "Intercept",value = -1.49135),
+    textInput("slope1","Slope", value = 0.08589),
     verbatimTextOutput("Formula"),
     h4("Dose (vg)"),
     verbatimTextOutput("Dose"),
@@ -74,15 +74,14 @@ server <- function(input, output, session) {
   }) 
   
   dosing <- eventReactive(input$simulate, {
-      eventTable(amount.units = "mg", time.units = "hr") |>
-        add.dosing(dose = log(as.double(input$dose1)), nbr.doses = 1) |>
-        add.sampling(seq(0, as.double(input$num)*as.double(input$interval)*24*30*2, by = 1*24*30))
+      eventTable( time.units = "hr") |>
+        add.dosing(dose = log(as.double(input$dose1)), nbr.doses = as.double(input$num), dosing.interval = as.double(input$interval)*24*30) |>
+        add.sampling(seq(0, as.double(input$num)*as.double(input$interval)*24*30, by = 24))
 
   })
   
   rxsolve <- eventReactive(input$simulate, {
-    group_value <- 2
-    rxSolve(model, c(GROUP = group_value, Intercept = as.double(input$intercept1), Slope = as.double(input$slope1)), dosing(), nSub = 1)
+    rxSolve(model, c(`F1`= as.double(input$intercept1)+ log(as.double(input$dose1))*as.double(input$slope1)), dosing(), nSub = 1)
   })
   
   simulation_data <- reactive({
@@ -107,13 +106,17 @@ server <- function(input, output, session) {
       mutate(month = time/(24*30))
     
     obs1 <- obs |> 
-      filter(SITE ==2)
+      filter(SITE ==2)|> 
+      mutate(month = WEEK/4)
     obs2 <- obs |> 
-      filter(SITE ==4)
+      filter(SITE ==4)|> 
+      mutate(month = WEEK/4)
     obs3 <- obs |> 
-      filter(SITE ==6)
+      filter(SITE ==6)|> 
+      mutate(month = WEEK/4)
     obs4 <- obs |> 
-      filter(SITE ==3)
+      filter(SITE ==3)|> 
+      mutate(month = WEEK/4)
     
 
     obs_tidy1 <- obs1 |> 
@@ -149,18 +152,17 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$VIT, aes(x = month, y = VIT/scale1), color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Vitreous") + 
+      labs(x = "Time (Month)", y = "Gene count (copies/host DNA)", color = NULL, title="Vitreous") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
             axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
             legend.title = element_text(size = 12)
-      ) + scale_x_continuous(breaks = seq(0, ), limits = c(0,NA)) +
-      geom_hline(yintercept = input$hline, color = "darkred")
+      ) + scale_x_continuous(breaks = seq(0, 300,12))
     
     if(!(is.null(input$file1))) {
-      plot <- plot + geom_point(data = data$obs1, aes(x = WEEK, y = DV, color = GROUP), alpha = 0.5) +
-        geom_line(data = data$obs_tidy1, aes(x = WEEK, y = DV, group = GROUP, color = GROUP)) 
+      plot <- plot + geom_point(data = data$obs1, aes(x = month, y = DV), alpha = 0.5) +
+        geom_line(data = data$obs_tidy1, aes(x = month, y = DV, group = GROUP)) 
     }
     plot <- ggplotly(plot)
   })
@@ -171,18 +173,17 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$RET, aes(x = month, y = RET/scale2), color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Retina") + 
+      labs(x = "Time (Month)", y = "Gene count (copies/host DNA)", color = NULL, title="Retina") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
             axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
             legend.title = element_text(size = 12)
-      ) + scale_x_continuous(breaks = seq(0, ((1344)+24*7)/7, by = 2), limits = c(0,NA)) +
-      geom_hline(yintercept = input$hline, color = "darkred")
+      ) + scale_x_continuous(breaks = seq(0, 300,12))
     
     if(!(is.null(input$file1))) {
-      plot <- plot + geom_point(data = data$obs2, aes(x = WEEK, y = DV, color = GROUP), alpha = 0.5) +
-        geom_line(data = data$obs_tidy2, aes(x = WEEK, y = DV, group = GROUP, color = GROUP)) 
+      plot <- plot + geom_point(data = data$obs2, aes(x = month, y = DV), alpha = 0.5) +
+        geom_line(data = data$obs_tidy2, aes(x = month, y = DV, group = GROUP)) 
     }
     plot <- ggplotly(plot)
   })
@@ -193,18 +194,17 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$OPT, aes(x = month, y = OPT/scale3), color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Optic Nerve") + 
+      labs(x = "Time (Month)", y = "Gene count (copies/host DNA)", color = NULL, title="Optic Nerve") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
             axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
             legend.title = element_text(size = 12)
-      ) + scale_x_continuous(breaks = seq(0, ((1344)+24*7)/7, by = 2), limits = c(0,NA)) +
-      geom_hline(yintercept = input$hline, color = "darkred")
+      ) + scale_x_continuous(breaks = seq(0, 300,12))
     
     if(!(is.null(input$file1))) {
-      plot <- plot + geom_point(data = data$obs3, aes(x = WEEK, y = DV, color = GROUP), alpha = 0.5) +
-        geom_line(data = data$obs_tidy3, aes(x = WEEK, y = DV, group = GROUP, color = GROUP)) 
+      plot <- plot + geom_point(data = data$obs3, aes(x = month, y = DV), alpha = 0.5) +
+        geom_line(data = data$obs_tidy3, aes(x = month, y = DV, group = GROUP)) 
     }
     plot <- ggplotly(plot)
   })
@@ -214,18 +214,17 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$IRIS, aes(x = month, y = IRIS/scale4), color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Iris") + 
+      labs(x = "Time (Month)", y = "Gene count (copies/host DNA)", color = NULL, title="Iris") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
             axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
             legend.title = element_text(size = 12)
-      ) + scale_x_continuous(breaks = seq(0, ((1344)+24*7)/7, by = 2), limits = c(0,NA)) +
-      geom_hline(yintercept = input$hline, color = "darkred")
+      ) + scale_x_continuous(breaks = seq(0, 300,12))
     
     if(!(is.null(input$file1))) {
-      plot <- plot + geom_point(data = data$obs4, aes(x = WEEK, y = DV, color = GROUP), alpha = 0.5) +
-        geom_line(data = data$obs_tidy4, aes(x = WEEK, y = DV, group = GROUP, color = GROUP)) 
+      plot <- plot + geom_point(data = data$obs4, aes(x = month, y = DV), alpha = 0.5) +
+        geom_line(data = data$obs_tidy4, aes(x = month, y = DV, group = GROUP)) 
     }
     plot <- ggplotly(plot)
   })
@@ -237,19 +236,18 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$VIT, aes(x = month, y = VIT/scale1),color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title="Vitreous") + 
+      labs(x = "Time (Month)", y = "Gene count (copies/host DNA)", color = NULL, title="Vitreous") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
             axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
             legend.title = element_text(size = 12)
-      ) + scale_x_continuous(breaks = seq(0, ((1344)+24*7)/7, by = 2), limits = c(0,NA)) +
-      geom_hline(yintercept = input$hline, color = "darkred")+ scale_y_log10()
+      ) + scale_x_continuous(breaks = seq(0, 300,12))+ scale_y_log10()
     
     
     if(!(is.null(input$file1))) {
-      plot <- plot+ geom_point(data= data$obs1, aes(x = WEEK, y= DV, color=GROUP), alpha = 0.5) +
-        geom_line(data = data$obs_tidy1, aes(x = WEEK, y = DV, group=GROUP, color = GROUP)) + scale_y_log10()
+      plot <- plot+ geom_point(data= data$obs1, aes(x = month, y= DV), alpha = 0.5) +
+        geom_line(data = data$obs_tidy1, aes(x = month, y = DV, group=GROUP)) + scale_y_log10()
     }
     plot <- ggplotly(plot)
   })
@@ -260,19 +258,18 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$RET, aes(x = month, y = RET/scale2),color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title = "Retina") + 
+      labs(x = "Time (Month)", y = "Gene count (copies/host DNA)", color = NULL, title = "Retina") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
             axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
             legend.title = element_text(size = 12)
-      ) + scale_x_continuous(breaks = seq(0, ((1344)+24*7)/7, by = 2), limits = c(0,NA)) +
-      geom_hline(yintercept = input$hline, color = "darkred")+ scale_y_log10()
+      ) + scale_x_continuous(breaks = seq(0, 300,12)) + scale_y_log10()
     
     
     if(!(is.null(input$file1))) {
-      plot <- plot+ geom_point(data= data$obs2, aes(x = WEEK, y= DV, color=GROUP), alpha = 0.5) +
-        geom_line(data = data$obs_tidy2, aes(x = WEEK, y = DV, group=GROUP, color = GROUP)) 
+      plot <- plot+ geom_point(data= data$obs2, aes(x = month, y= DV), alpha = 0.5) +
+        geom_line(data = data$obs_tidy2, aes(x = month, y = DV, group=GROUP)) + scale_y_log10()
     }
     plot <- ggplotly(plot)
   })
@@ -284,19 +281,18 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$OPT, aes(x = month, y = OPT/scale3),color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title = "Optic Nerve") + 
+      labs(x = "Time (Month)", y = "Gene count (copies/host DNA)", color = NULL, title = "Optic Nerve") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
             axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
             legend.title = element_text(size = 12)
-      ) + scale_x_continuous(breaks = seq(0, ((1344)+24*7)/7, by = 2), limits = c(0,NA)) +
-      geom_hline(yintercept = input$hline, color = "darkred")+ scale_y_log10()
+      ) + scale_x_continuous(breaks = seq(0, 300,12))+ scale_y_log10()
     
     
     if(!(is.null(input$file1))) {
-      plot <- plot+ geom_point(data= data$obs3, aes(x = WEEK, y= DV, color=GROUP), alpha = 0.5) +
-        geom_line(data = data$obs_tidy3, aes(x = WEEK, y = DV, group=GROUP, color = GROUP)) + scale_y_log10()
+      plot <- plot+ geom_point(data= data$obs3, aes(x = month, y= DV), alpha = 0.5) +
+        geom_line(data = data$obs_tidy3, aes(x = month, y = DV, group=GROUP)) + scale_y_log10()
     }
     plot <- ggplotly(plot)
   })
@@ -306,28 +302,26 @@ server <- function(input, output, session) {
     
     plot <- ggplot() +
       geom_line(data = data$IRIS, aes(x = month, y = IRIS/scale4),color = "#337AB7") + theme_bw() +
-      labs(x = "Time (Week)", y = "Gene count (copies/host DNA)", color = NULL, title = "Iris") + 
+      labs(x = "Time (Month)", y = "Gene count (copies/host DNA)", color = NULL, title = "Iris") + 
       theme(axis.text.x = element_text(vjust = 0.5, size = 12),
             axis.text.y = element_text(vjust = 0.5, size = 12),
             axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
             axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
             legend.title = element_text(size = 12)
-      ) + scale_x_continuous(breaks = seq(0, ((1344)+24*7)/7, by = 2), limits = c(0,NA)) +
-      geom_hline(yintercept = input$hline, color = "darkred")+ scale_y_log10()
-    
+      ) + scale_x_continuous(breaks = seq(0, 300,12))+ scale_y_log10()
     
     if(!(is.null(input$file1))) {
-      plot <- plot+ geom_point(data= data$obs4, aes(x = WEEK, y= DV, color=GROUP), alpha = 0.5) +
-        geom_line(data = data$obs_tidy4, aes(x = WEEK, y = DV, group=GROUP, color = GROUP)) + scale_y_log10()
+      plot <- plot+ geom_point(data= data$obs4, aes(x = month, y= DV), alpha = 0.5) +
+        geom_line(data = data$obs_tidy4, aes(x = month, y = DV, group=GROUP)) + scale_y_log10()
     }
     plot <- ggplotly(plot)
   })
 
 
   output$F1 <- renderPrint({
-    req(input$Slope1, input$Intercept1, input$dose1) 
-    slope <- as.numeric(input$Slope1)
-    intercept <- as.numeric(input$Intercept1)
+    req(input$slope1, input$intercept1, input$dose1) 
+    slope <- as.numeric(input$slope1)
+    intercept <- as.numeric(input$intercept1)
     dose <- as.numeric(input$dose1)
     
     result <- slope * log(dose) + intercept

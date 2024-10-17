@@ -275,7 +275,7 @@ a_full <- bind_rows(cohorta1_full, cohorta2_full, cohorta3_full, cohorta4_full) 
   mutate(DAY = PTIME/24, 
          DAY = ifelse(DAY<1, 1, DAY+1))
 a_full |> 
-  write_csv("A.csv", na= ".")
+  write_csv("a.csv", na= ".")
 
             
 ###########################################################################################################
