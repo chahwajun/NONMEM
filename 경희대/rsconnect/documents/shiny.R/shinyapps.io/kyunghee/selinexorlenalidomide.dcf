@@ -1,0 +1,13 @@
+name: selinexorlenalidomide
+title: selinexorlenalidomide
+username: kyunghee
+account: kyunghee
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13064505
+bundleId: 9242818
+url: https://kyunghee.shinyapps.io/selinexorlenalidomide/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Lenalidomide final model.zip|SEL.csv|selinexor model.zip|Selinexor.html|Lenalidomide final model|selinexor model
