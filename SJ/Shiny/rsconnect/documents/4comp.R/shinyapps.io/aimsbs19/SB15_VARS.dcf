@@ -1,0 +1,13 @@
+name: SB15_VARS
+title: SB15_VARS
+username: aimsbs19
+account: aimsbs19
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13101766
+bundleId: 9257411
+url: https://aimsbs19.shinyapps.io/SB15_VARS/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: 1_9.out|example.csv|example2.csv|example3.csv|full.css|function.R|GC_831.out|GC_VROI_1.csv|GC_VROI_1.csv.part|group2.csv|group3.csv|group4.csv|group5.csv|group6.csv|group7.csv|Human_full.R|model.R|OI_190.out|OI_315.out|rxode2_model.rds|SB15_V32.out|SG_11.ctl|shiny.R|shiny_gc.R|shiny_zolpidem_final_240328.R|VARS_820.out|VARS_902.out|VARS_904.out|Vitreous.R
