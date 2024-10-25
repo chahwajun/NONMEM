@@ -341,3 +341,6 @@ cohorta1_full <- cohort1_time |>
   select(ORIID, ID, PTIME, TIME, TAD,DV, COHORT)
 
 ###########################################################################################################
+
+
+abcd <- read_csv("PK datset_SY.csv")
