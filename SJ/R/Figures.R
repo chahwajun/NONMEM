@@ -515,7 +515,24 @@ ggsave("SJ/Figure/dose_prop_Optic nerve.png", dpi = 600, width = 10, height =6)
 
 
  
-
+###########################
+propo |> 
+  filter(SITE %in% c("Aqueous humor","Vitreous humor","Iris", "Retina", "Choroid", "Optic nerve")) |> 
+  ggplot() +
+  geom_point(aes(x = factor(GROUP, levels = c("1.0*10^8","3.0*10^8","1.0*10^9","3.0*10^9","1.0*10^10","5.0*10^10")), 
+                 y = CONC, group = SITE, color =SITE)) +
+  geom_line(aes(x = factor(GROUP, levels = c("1.0*10^8","3.0*10^8","1.0*10^9","3.0*10^9","1.0*10^10","5.0*10^10")), 
+                y = CONC, group = SITE,color =SITE)) +  
+  geom_errorbar(aes(x = factor(GROUP, levels = c("1.0*10^8","3.0*10^8","1.0*10^9","3.0*10^9","1.0*10^10","5.0*10^10")), 
+                    ymin = CONC - sd, ymax = CONC + sd,group = SITE,color =SITE), width = 0.1) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(vjust = 0.5, size = 12),
+        axis.text.y = element_text(vjust = 0.5, size = 12),
+        axis.title.y = element_text(size = 14, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+        axis.title.x = element_text(size = 14, margin = margin(t = 10, r = 0, b = 0, l = 0)),
+        legend.title = element_text(size = 12)
+  ) + labs(x = "AAV2-G001 AIO, vg/eye", y= "Aflibercept (ng/mL)") + scale_color_manual(values = c("Aqueous humor"="aquamarine3","Vitreous humor"= "azure4","Iris"= "blue3", "Retina" = "darkorange3", "Choroid" = "black", "Optic nerve" = "darkgoldenrod1"))
+ggsave("SJ/Figure/DOSE_PROP_combined.png", dpi = 600, width = 10, height = 6)
 
 
 
