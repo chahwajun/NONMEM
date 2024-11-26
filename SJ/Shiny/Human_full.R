@@ -6,7 +6,7 @@ library(nonmem2rx)
 library(plotly)
 
 
-model <- nonmem2rx("SG_11.ctl")  
+model <- nonmem2rx("SG_111.ctl")  
 
 sidebar <- card(
   textInput("dose", label = h2("Dose (vg/eye)", style ="font-size: 14px;"),value = 100000000),

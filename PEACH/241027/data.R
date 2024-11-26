@@ -148,3 +148,8 @@ monkey2_full <- bind_rows(monkey2,monkey2_dosing) |>
 
 bind_rows(monkey1_full,monkey2_full) |> 
   write_csv("monkey.csv", na = ".")
+
+
+
+###########################################################################################################  
+
