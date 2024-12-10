@@ -3,13 +3,24 @@ library(bslib)
 library(shinyWidgets)
 library(tidyverse)
 library(rxode2)
+source("model.R")
 
 side <- card(
   downloadBttn(
     "report",
     label = "Export Patients Report",
     style = "bordered"
-  )
+  ),
+  textInput("dfa", label = NULL)
+)
+input <- c(
+  pickerInput("route", label = NULL, choices = c("Intermittent IV-Injuection", "Continuous IV-Injection"),
+              options = list(`live-search`= TRUE, title = "Select Drug Route")
+              ),
+  pickerInput("route", label = NULL, choices = c("Intermittent IV-Injuection", "Continuous IV-Injection"),
+              options = list(`live-search`= TRUE, title = "Select Drug Route")
+              )
+  
 )
 
 ui <- page_navbar(
@@ -47,26 +58,80 @@ ui <- page_navbar(
         )
       ),
       card(
-        h4("Lab Results")
+        card(
+          h4("Lab Results"),
+          h5("Calculate Renal Function Using"),
+          layout_columns(
+            col_widths = c(4, 4), 
+            radioButtons(
+              "lab",
+              label = NULL,
+              choices = c("Scr" = "scr", "Exact CrCl" = "crcl"),
+              selected = "scr"
+            ),
+            div(
+              class = "input-row",
+              conditionalPanel(
+                condition = "input.lab == 'scr'",
+                textInput("cr_scr", label = NULL, placeholder = "Enter Scr value", width = "80%")
+              ),
+              conditionalPanel(
+                condition = "input.lab == 'crcl'",
+                textInput("cr_crcl", label = NULL, placeholder = "Enter CrCl value", width = "80%")
+              ),
+              conditionalPanel(
+                condition = "input.lab == 'scr'",
+                h3("mg/dL")
+              ),
+              conditionalPanel(
+                condition = "input.lab == 'crcl'",
+                h3("mL/min")
+              )
+            )
+          )
+        ),
+        card(
+          h4("Model"),
+          layout_columns(
+            col_widths = c(2,4,4,10),
+            h3("Model"), pickerInput("model", label = NULL, choices = c("Bae 2019"))
+          )
+        )
       ),
       card(
         h4("Population PK"),
 
       ),
       card(
-        h5("Renal Function")
-      ),
+        h5("Renal Function"),
+        tableOutput("renal")
+      )
     )
   ),
   nav_panel(
     title = "Drug Monitering",
     layout_columns(
-      col_widths = c(2,5,5),
+      fillable = TRUE, 
+      col_widths = c(3, 9),
       side,
-      card(),
-      card()
+      card(
+        layout_columns(
+          col_widths = c(6, 6),
+          card(
+            h5("Therapeutic Target"),
+            input
+               ),
+          card(h5("Serum Level Graph"))
+        ),
+        layout_columns(
+          col_widths = c(6, 6),
+          card(h5("Dosage History")),
+          card(h5("Serum Drug Level"))
+        )
+      )
     )
   ),
+  
   nav_panel(
     title = "Steady State"
   )
@@ -75,6 +140,11 @@ ui <- page_navbar(
 
 server <- function(input, output, session){
   
+  output$renal <- renderTable({
+    if (input$lab == "scr" && input$sex == "Male"){
+      
+    }
+  })
   
   
 }

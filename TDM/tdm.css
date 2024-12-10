@@ -1,7 +1,13 @@
+.input-row{
+    display: flex;
+  align-items: center;
+  gap: 10px; 
+}
+
 hr {
-height: 1px;
-margin-top: 0px;
-margin-bottom: 0px;
+    height: 1px;
+    margin-top: 0px;
+    margin-bottom: 0px;
 }
 
 h3{
