@@ -3,13 +3,11 @@ library(bslib)
 library(shinyWidgets)
 library(tidyverse)
 library(rxode2)
-
+library(DT)
 source("model.R")
-model <- rxode(model)
-
 side <- card(
   downloadBttn(
-    "report",
+    "report1",
     label = "Export Patients Report",
     style = "bordered"
   ),
@@ -38,10 +36,13 @@ ui <- page_navbar(
       card(
         h5("Patients"),
         layout_columns(
-          col_widths = c(2,4,2,4,2,4),
+          col_widths = c(2,4,2,4,2,4,2,4,2,4),
           h3("First"),textInput("rirst", label = NULL),
           h3("Last"), textInput("last", label = NULL),
-          h3("Birthdate"),airDatepickerInput("date1",label = NULL, view = c("days", "months", "years"),language = "ko")
+          h3("Birthdate"),airDatepickerInput("date1",label = NULL, view = c("days", "months", "years"),language = "ko"),
+          h3("Age"), textOutput("current_age"),
+          h3("Weight"), textInput("weight", label = NULL),
+          h3("Height"), textInput("height", label = NULL)
         ),
         layout_columns(
           col_widths = c(2,4,2,4),
@@ -62,7 +63,7 @@ ui <- page_navbar(
           )
         )
       ),
-      card(
+      list(
         card(
           h4("Lab Results"),
           h5("Calculate Renal Function Using"),
@@ -78,7 +79,7 @@ ui <- page_navbar(
               class = "input-row",
               conditionalPanel(
                 condition = "input.lab == 'scr'",
-                textInput("cr_scr", label = NULL, placeholder = "Enter Scr value", width = "80%")
+                textInput("cr_scr", label = NULL, placeholder = "Enter Serum Concentration", width = "80%")
               ),
               conditionalPanel(
                 condition = "input.lab == 'crcl'",
@@ -105,7 +106,6 @@ ui <- page_navbar(
       ),
       card(
         h4("Population PK"),
-        
       ),
       card(
         h5("Renal Function"),
@@ -134,7 +134,9 @@ ui <- page_navbar(
                 h6("Dosing Recommendation"),
                 navset_underline(
                   nav_panel(
-                    title = "Population"
+                    title = "Population",
+                    actionBttn("report2", label = "Add Dose"),
+                    
                   ),
                   nav_panel(
                     title = "Individual"
@@ -147,8 +149,14 @@ ui <- page_navbar(
         ),
         layout_columns(
           col_widths = c(6, 6),
-          card(h5("Dosage History")),
-          card(h5("Serum Drug Level"))
+          card(
+            h5("Dosage History"),
+            DTOutput("dosageTable"),
+            actionButton("deleteRow", label = "Delete Selected Row", width = "25%")
+               ),
+          card(
+            h5("Serum Drug Level")
+               )
         )
       )
     )
@@ -159,16 +167,143 @@ ui <- page_navbar(
   )
 )
 
-server <- function(input, output, session){
+server <- function(input, output, session) {
   
-  output$renal <- renderTable({
-    if (input$lab == "scr" && input$sex == "Male"){
-      
+  current_age <- reactive({
+    if (!is.null(input$date1)) {
+      birth_date <- as.Date(input$date1)
+      current_date <- Sys.Date()
+      age <- as.numeric(difftime(current_date, birth_date, units = "weeks")) %/% 52
+      return(age) 
+    } else {
+      return(NULL)
     }
   })
   
+  output$current_age <- renderText({
+    if (!is.null(current_age())) {
+      paste("Age:", current_age())
+    } else {
+      NULL
+    }
+  })
+  
+  output$renal <- renderTable({
+    
+    if (input$sex == "Male" && input$lab == "scr") {
+      renal <- tibble(
+        "A" = "Crcl",
+        "B" = (140-current_age())*as.double(input$weight)/(72*as.double(input$cr_scr))
+      )
+    } else{
+      NULL
+    }
+  })
+  
+  dosage_history <- reactiveVal(data.frame(
+    DateTime = character(),
+    Dose = numeric(),
+    Unit = character(),
+    Route = character(),
+    Interval = character(),
+    stringsAsFactors = FALSE
+  ))
+  
+
+  observeEvent(input$report2, {
+    if (!is.null(input$date2) && !is.null(input$interval2)) {
+      new_dose <- data.frame(
+        DateTime = format(input$date2, "%Y-%m-%d %H:%M"),
+        Dose = as.numeric(input$targettrough),
+        Unit = "mg",
+        Route = input$route,
+        Interval = input$interval2,
+        stringsAsFactors = FALSE
+      )
+      
+
+      current_history <- dosage_history()
+      updated_history <- rbind(current_history, new_dose)
+      updated_history <- updated_history[order(updated_history$DateTime), ]
+      dosage_history(updated_history)
+    }
+  })
+  
+
+  observeEvent(input$deleteRow, {
+    selected <- input$dosageTable_rows_selected
+    if (!is.null(selected)) {
+      current_history <- dosage_history()
+      updated_history <- current_history[-selected, ]
+      dosage_history(updated_history)
+    }
+  })
+  
+
+  output$dosageTable <- renderDT({
+    datatable(
+      dosage_history(),
+      editable = TRUE,
+      selection = "single",
+      options = list(
+        pageLength = 5,
+        lengthMenu = c(5, 10, 15),
+        ordering = TRUE,
+        searching = TRUE
+      )
+    )
+  })
+  
+
+  observeEvent(input$dosageTable_cell_edit, {
+    info <- input$dosageTable_cell_edit
+    str(info) 
+    
+    updated_history <- dosage_history()
+    updated_history[info$row, info$col] <- info$value
+    dosage_history(updated_history)
+  })
+  
+  observeEvent(input$report2, {
+    
+    if (!is.null(input$targettrough) && !is.null(input$interval2)) {
+
+      theta <- list(clearance = 5, volume = 50)
+      interval <- as.numeric(input$interval2) 
+      target_ctrough <- as.numeric(input$targettrough) 
+      
+      model <- rxode(model)
+      
+      init <- c(central = 0)
+      params <- c(clearance = theta$clearance, volume = theta$volume)
+      
+      # Simulate for the dosing interval
+      
+      sim <- model %>% rxSolve(params, init, events = eventTable() %>%
+                                 add.dosing(dose = 100, nbr.doses = 1) %>% # Removed unused 'interval' argument
+                                 add.sampling(seq(0, interval, by = 0.1)))
+      
+      # Find the dose that meets target Ctrough
+      recommended_dose <- optim(
+        par = 100, # Initial dose guess
+        fn = function(dose) {
+          sim <- model %>% rxSolve(params, init, events = eventTable() %>%
+                                     add.dosing(dose = dose, nbr.doses = 1) %>% # Removed unused 'interval' argument
+                                     add.sampling(seq(0, interval, by = 0.1)))
+          trough <- tail(sim$cp, 1) # Last concentration (Ctrough)
+          return((trough - target_ctrough)^2) # Minimize squared difference
+        }
+      )
+      
+      # Display recommended dose
+      showModal(modalDialog(
+        title = "Recommended Dose",
+        paste("The recommended dose to achieve the target trough is:", round(recommended_dose$par, 2), "mg"),
+        easyClose = TRUE
+      ))
+    }
+  })
   
 }
-
 
 shinyApp(ui, server)
