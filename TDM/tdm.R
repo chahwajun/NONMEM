@@ -4,7 +4,10 @@ library(shinyWidgets)
 library(tidyverse)
 library(rxode2)
 library(DT)
+
 source("model.R")
+model <- rxode(model)
+
 side <- card(
   downloadBttn(
     "report1",
@@ -14,13 +17,14 @@ side <- card(
   textInput("dfa", label = NULL)
 )
 input <- list(
-  pickerInput("route", label = "Route", choices = c("Intermittent IV-Injuection", "Continuous IV-Injection"),
+  pickerInput("route2", label = "Route", choices = c("Intermittent IV-Injuection", "Continuous IV-Injection"),
               options = list(`live-search`= TRUE, title = "Select Drug Route")
   ),
   pickerInput("target", label = "Target", choices = c("Trough", "AUIC"),
               options = list(`live-search`= TRUE, title = "Select Drug Route")
               ),
-  textInput("targettrough",label = "Desired Trough (ng/mL)"),
+  textInput("targettrough2",label = "Trough Concentration(mg/L)"),
+  textInput("infusiontime2", label = "Infusion Time"),
   textInput("interval2", label = "Interval (hr)"),
   airDatepickerInput("date2",label = "Next Dose Time", view = c("days", "months", "years"), language = "ko",timepicker = TRUE
                      )      
@@ -136,7 +140,7 @@ ui <- page_navbar(
                   nav_panel(
                     title = "Population",
                     actionBttn("report2", label = "Add Dose"),
-                    
+                    textOutput("recommended_dose")
                   ),
                   nav_panel(
                     title = "Individual"
@@ -145,18 +149,26 @@ ui <- page_navbar(
               )
             )
           ),
-          card(h5("Serum Level Graph"))
+          card(h5("Serum Level Graph"),
+               plotOutput("population")
+               )
         ),
         layout_columns(
           col_widths = c(6, 6),
           card(
             h5("Dosage History"),
             DTOutput("dosageTable"),
-            actionButton("deleteRow", label = "Delete Selected Row", width = "25%")
+            actionButton("deleteRow2", label = "Delete Selected Row", width = "25%")
                ),
           card(
-            h5("Serum Drug Level")
-               )
+            h5("Serum Drug Level"),
+            DTOutput("sampling2"),
+            layout_columns(
+              col_widths = c(3,3),
+              actionButton("addRow2", label = "Add Concentration", width = "100%"),
+              actionButton("deleteRow22", label = "Delete Concentration", width = "100%")
+            )
+              )
         )
       )
     )
@@ -195,28 +207,32 @@ server <- function(input, output, session) {
         "A" = "Crcl",
         "B" = (140-current_age())*as.double(input$weight)/(72*as.double(input$cr_scr))
       )
-    } else{
-      NULL
+    } else if(input$sex == "Female" && input$lab == "scr"){
+      renal <- tibble(
+        "A" = "Crcl",
+        "B" = (140-current_age())*as.double(input$weight)/(72*as.double(input$cr_scr))*0.85
+      )
     }
+    
   })
   
   dosage_history <- reactiveVal(data.frame(
     DateTime = character(),
-    Dose = numeric(),
-    Unit = character(),
+    Ctrough = numeric(),
+    Infusion_Time= numeric(),
     Route = character(),
-    Interval = character(),
+    Interval = numeric(),
     stringsAsFactors = FALSE
   ))
   
 
   observeEvent(input$report2, {
-    if (!is.null(input$date2) && !is.null(input$interval2)) {
+    if (!is.null(input$date2) && !is.null(input$interval2) && !is.null(input$infusiontime2)&& !is.null(input$route2)) {
       new_dose <- data.frame(
         DateTime = format(input$date2, "%Y-%m-%d %H:%M"),
-        Dose = as.numeric(input$targettrough),
-        Unit = "mg",
-        Route = input$route,
+        Ctrough = as.numeric(input$targettrough2),
+        Infusion_Time = as.numeric(input$infusiontime2),
+        Route = input$route2,
         Interval = input$interval2,
         stringsAsFactors = FALSE
       )
@@ -230,7 +246,7 @@ server <- function(input, output, session) {
   })
   
 
-  observeEvent(input$deleteRow, {
+  observeEvent(input$deleteRow2, {
     selected <- input$dosageTable_rows_selected
     if (!is.null(selected)) {
       current_history <- dosage_history()
@@ -264,43 +280,135 @@ server <- function(input, output, session) {
     dosage_history(updated_history)
   })
   
+  recommended_dose <- reactiveVal(NULL) 
+  
   observeEvent(input$report2, {
+    req(input$targettrough2, input$infusiontime2, input$interval2)  
     
-    if (!is.null(input$targettrough) && !is.null(input$interval2)) {
+    target_trough <- as.numeric(input$targettrough2)
+    infusion_time <- as.numeric(input$infusiontime2)
+    interval <- as.numeric(input$interval2)
+    
+    init <- c(central = 0, peri = 0)
+    params <- c(CL = 2.82, V1 = 31.8, Q = 11.7, V2 = 75.4, e.CL = 0, e.V2 = 0)
+    
+    result <- optim(
+      par = 100,
+      fn = function(dose) {
+        sim <- model |> 
+          rxSolve(
+            params, 
+            init, 
+            events = et(amt = dose, dur = infusion_time) |> 
+              add.sampling(seq(0, interval*2, by = 0.1)
+                           )
+          )
+        
+        
+        if (nrow(sim) == 0) return(Inf)
+        trough <- tail(sim$central, 1)
+        return((trough - target_trough)^2)
+      },
+      method="L-BFGS-B"
+    )
+    
+    if (result$convergence == 0) {
+      recommended_dose(round(result$par, 2)) # Update reactive value
+    } else {
+      recommended_dose(NULL) # Reset if optimization fails
+    }
+  })
+  
+  output$recommended_dose <- renderText({
+    if (!is.null(recommended_dose())) {
+      paste("Recommended Dose:", recommended_dose(), "mg")
+    } else {
+      "Optimization failed. Please check inputs."
+    }
+  })
 
-      theta <- list(clearance = 5, volume = 50)
-      interval <- as.numeric(input$interval2) 
-      target_ctrough <- as.numeric(input$targettrough) 
+
+  output$population <- renderPlot({
+    dose <- recommended_dose()
+    
+    if (!is.null(dose)) {
+      target_trough <- as.numeric(input$targettrough2)
+      infusion_time <- as.numeric(input$infusiontime2)
+      interval <- as.numeric(input$interval2)
       
-      model <- rxode(model)
+      init <- c(central = 0, peri = 0)
+      params <- c(CL = 2.82, V1 = 31.8, Q = 11.7, V2 = 75.4, e.CL = 0, e.V2 = 0)
       
-      init <- c(central = 0)
-      params <- c(clearance = theta$clearance, volume = theta$volume)
+      sim <- model |> 
+        rxSolve(
+          params, 
+          init, 
+          events = et(amt = dose, dur = infusion_time) |> 
+            add.sampling(seq(0, interval*2, by = 0.1))
+        )
+    
+      sampling_data <- sampling_history() 
       
-      # Simulate for the dosing interval
+    
+      ggplot(sim, aes(x = time, y = central)) +
+        geom_line(color = "black", size = 1) + 
+        geom_point(data = sampling_data, aes(x = Time, y = Concentration), color = "blue", size = 2) +
+        geom_hline(yintercept = target_trough, linetype = "dashed", color = "red", size = 0.8) +
+        theme_bw() +
+        labs(title = "Population Concentration vs. Time with Sampling Data",x = "Time (hours)",y = "Concentration (mg/L)")
       
-      sim <- model %>% rxSolve(params, init, events = eventTable() %>%
-                                 add.dosing(dose = 100, nbr.doses = 1) %>% # Removed unused 'interval' argument
-                                 add.sampling(seq(0, interval, by = 0.1)))
-      
-      # Find the dose that meets target Ctrough
-      recommended_dose <- optim(
-        par = 100, # Initial dose guess
-        fn = function(dose) {
-          sim <- model %>% rxSolve(params, init, events = eventTable() %>%
-                                     add.dosing(dose = dose, nbr.doses = 1) %>% # Removed unused 'interval' argument
-                                     add.sampling(seq(0, interval, by = 0.1)))
-          trough <- tail(sim$cp, 1) # Last concentration (Ctrough)
-          return((trough - target_ctrough)^2) # Minimize squared difference
-        }
+    } else {
+      NULL
+    }
+  })
+  
+  
+  
+  sampling_history <- reactiveVal(data.frame(
+    Time = numeric(),
+    Concentration = numeric(),
+    stringsAsFactors = FALSE
+  ))
+  
+  output$sampling2 <- renderDT({
+    datatable(
+      sampling_history(),
+      editable = TRUE, 
+      selection = "none", 
+      options = list(
+        pageLength = 5,
+        lengthMenu = c(5, 10, 15),
+        ordering = FALSE,
+        searching = FALSE
       )
-      
-      # Display recommended dose
-      showModal(modalDialog(
-        title = "Recommended Dose",
-        paste("The recommended dose to achieve the target trough is:", round(recommended_dose$par, 2), "mg"),
-        easyClose = TRUE
-      ))
+    )
+  })
+  
+
+  observeEvent(input$sampling2_cell_edit, {
+    info <- input$sampling2_cell_edit 
+    updated_table <- sampling_history() 
+    updated_table[info$row, info$col] <- as.numeric(info$value)  
+    sampling_history(updated_table)  
+  })
+  
+
+  observeEvent(input$addRow2, {
+    new_row <- data.frame(
+      Time = NA,  
+      Concentration = NA,
+      stringsAsFactors = FALSE
+    )
+    updated_table <- rbind(sampling_history(), new_row)
+    sampling_history(updated_table)
+  })
+  
+
+  observeEvent(input$deleteRow22, {
+    selected <- input$sampling2_rows_selected  
+    if (!is.null(selected) && length(selected) > 0) {
+      updated_table <- sampling_history()[-selected, ]
+      sampling_history(updated_table)
     }
   })
   

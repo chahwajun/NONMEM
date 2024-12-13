@@ -5,7 +5,7 @@ account: aimsbs19
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 13450800
-bundleId:
+bundleId: 9420183
 url: https://aimsbs19.shinyapps.io/G001_simulation2/
 version: 1
 asMultiple: FALSE

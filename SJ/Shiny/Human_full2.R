@@ -25,7 +25,7 @@ abline <- card(
   sliderInput("ktr3",h2("KTR3 (VIT 1)", style ="font-size: 14px;"), min = 0, max = 5, value = 1, step = 0.1, width = "100%"), 
   sliderInput("ktr4",h2("KTR4 (VIT2)", style ="font-size: 14px;"), min = 0, max = 5, value = 1, step = 0.1, width = "100%"), 
   sliderInput("ktr5",h2("KTR5 (IRIS 1)",style ="font-size: 14px;"), min = 0, max = 5, value = 1, step = 0.1, width = "100%"),
-  sliderInput("ktr6",h2("KTR6 (IRIS 2)",style ="font-size: 14px;"), min = 0, max = 5, value = 1, step = 0.1, width = "100%"), 
+  sliderInput("ktr6",h2("KTT6 (IRIS 2)",style ="font-size: 14px;"), min = 0, max = 5, value = 1, step = 0.1, width = "100%"), 
   sliderInput("cl39",h2("CL39 (OPT)",style ="font-size: 14px;"), min = 0, max = 5, value = 1, step = 0.1, width = "100%")
 )
 

@@ -20,8 +20,8 @@ model <- function() {
     cmt(central)
     cmt(peri)
     CL <- t.CL * exp(e.CL)
-    V1 <- t.V1 * exp(e.K1)
-    Q  <- t.Q  * exp(e.Q)
+    V1 <- t.V1 
+    Q  <- t.Q  
     V2 <- t.V2 * exp(e.V2)
     
     k1 <- Q/V1
