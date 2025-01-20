@@ -6,7 +6,6 @@ library(rxode2)
 library(DT)
 
 source("model.R")
-model <- rxode(model)
 
 side <- card(
   downloadBttn(
@@ -53,16 +52,25 @@ ui <- page_navbar(
           h3("Patient ID"),textInput("patient",label = NULL),
           h3("Sex"),radioGroupButtons("sex",label = NULL,choices = c("Male", "Female"))
         ),
+
+          conditionalPanel(
+            "input.drug == `Cyclosporin`",
+            layout_columns(
+              col_widths = c(2,4),
+              h3("POD weeks"), textInput("POD",label = NULL)
+            )
+          )
+        ,
         hr(),
         layout_columns(
           col_widths = c(2,4),
-          "Drug", pickerInput("drug", label = NULL, choices = c("Vancomycin"),
+          "Drug", pickerInput("drug", label = NULL, choices = c("Vancomycin", "Cyclosporin"),
                               options = list(`live-search`= TRUE, title = "Select Drug")
           )
         ),
         layout_columns(
           col_widths = c(2,4),
-          "Route", pickerInput("route", label = NULL, choices = c("Intermittent IV-Injuection", "Continuous IV-Injection"),
+          "Route", pickerInput("route", label = NULL, choices = c("Intravenous Bolus", "Oral"),
                                options = list(`live-search`= TRUE, title = "Select Drug Route")
           )
         )
@@ -70,7 +78,6 @@ ui <- page_navbar(
       list(
         card(
           h4("Lab Results"),
-          h5("Calculate Renal Function Using"),
           layout_columns(
             col_widths = c(4, 4), 
             radioButtons(
@@ -97,19 +104,37 @@ ui <- page_navbar(
                 condition = "input.lab == 'crcl'",
                 h3("mL/min")
               )
+            ),
+          ),
+          conditionalPanel(
+            "input.drug == `Cyclosporin`",
+            layout_columns(
+              col_widths = c(4,4,4),
+              h3("Total Bilirubin"), textInput("bilirubin", label=NULL, width = "80%"), h3("mg/dl")
             )
           )
         ),
         card(
           h4("Model"),
-          layout_columns(
-            col_widths = c(2,4,4,10),
-            h3("Model"), pickerInput("model", label = NULL, choices = c("Bae 2019"))
+          conditionalPanel(
+            "input.drug == `Vancomycin`",
+            layout_columns(
+              col_widths = c(4,4),
+              h3("Model"), pickerInput("model", label = NULL, choices = c("Bae 2019"))
+            ),
+          ),
+          conditionalPanel(
+            "input.drug == `Cyclosporin`",
+            layout_columns(
+              col_widths = c(4,4),
+              h3("Model"), pickerInput("model", label = NULL, choices = c("Han 2019"))
+            )
           )
         )
       ),
       card(
-        h4("Population PK"),
+        h4("Population PK model"),
+        verbatimTextOutput("model")
       ),
       card(
         h5("Renal Function"),
@@ -181,6 +206,20 @@ ui <- page_navbar(
 
 server <- function(input, output, session) {
   
+  model <- reactive({
+    if(input$drug == "Vancomycin") {
+      vancomycin
+    } else if(input$drug == "Cyclosporin") {
+      cyclosporin
+    }
+    
+  })
+  
+  output$model <- renderPrint({
+    
+   model()
+  })
+    
   current_age <- reactive({
     if (!is.null(input$date1)) {
       birth_date <- as.Date(input$date1)
@@ -213,7 +252,6 @@ server <- function(input, output, session) {
         "B" = (140-current_age())*as.double(input$weight)/(72*as.double(input$cr_scr))*0.85
       )
     }
-    
   })
   
   dosage_history <- reactiveVal(data.frame(
@@ -353,13 +391,12 @@ server <- function(input, output, session) {
       ggplot(sim, aes(x = time, y = central)) +
         geom_line(color = "black", size = 1) + 
         geom_point(data = sampling_data, aes(x = Time, y = Concentration), color = "blue", size = 2) +
-        geom_hline(yintercept = target_trough, linetype = "dashed", color = "red", size = 0.8) +
-        theme_bw() +
-        labs(title = "Population Concentration vs. Time with Sampling Data",x = "Time (hours)",y = "Concentration (mg/L)")
-      
+        geom_hline(yintercept = target_trough, linetype = "dashed", color = "red", size = 0.8) +  theme_bw() +
+        labs(x = "Time (hours)",y = "Vancomycin Concentration (mg/L)")  + scale_x_continuous(breaks = seq(0,interval*2,4))
     } else {
       NULL
     }
+    
   })
   
   
