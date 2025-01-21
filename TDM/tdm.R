@@ -17,17 +17,33 @@ side <- card(
   uiOutput("dfa")
 )
 input <- list(
-  pickerInput("route2", label = "Route", choices = c("Intermittent IV-Injuection", "Continuous IV-Injection"),
-              options = list(`live-search`= TRUE, title = "Select Drug Route")
+  conditionalPanel(
+    condition = "input.drug == 'Vancomycin'",  
+    pickerInput("route2", label = "Route", choices = c("Intravenous Infusion"),
+                options = list(`live-search`= TRUE, title = "Select Drug Route")
+    ),
+    pickerInput("target", label = "Target", choices = c("Trough"),
+                options = list(`live-search`= TRUE, title = "Select Drug Route")
+    ),
+    textInput("targettrough2",label = "Dose (mg)"),
+    textInput("infusiontime2", label = "Infusion Time"),
+    textInput("interval2", label = "Interval (hr)"),
+    airDatepickerInput("date2",label = "Dose Time", view = c("days", "months", "years"), language = "ko",timepicker = TRUE
+    )      
   ),
-  pickerInput("target", label = "Target", choices = c("Trough", "AUIC"),
-              options = list(`live-search`= TRUE, title = "Select Drug Route")
-              ),
-  textInput("targettrough2",label = "Trough Concentration(mg/L)"),
-  textInput("infusiontime2", label = "Infusion Time"),
-  textInput("interval2", label = "Interval (hr)"),
-  airDatepickerInput("date2",label = "Next Dose Time", view = c("days", "months", "years"), language = "ko",timepicker = TRUE
-                     )      
+  conditionalPanel(
+    condition = "input.drug == 'Cyclosporin'",  
+    pickerInput("route3", label = "Route", choices = c("Intravenous Bolus", "Oral"),
+                options = list(`live-search`= TRUE, title = "Select Drug Route")
+    ),
+    pickerInput("target", label = "Target", choices = c("Trough"),
+                options = list(`live-search`= TRUE, title = "Select Drug Route")
+    ),
+    textInput("targettrough2",label = "Dose (mg)"),
+    textInput("interval2", label = "Interval (hr)"),
+    airDatepickerInput("date2",label = "Dose Time", view = c("days", "months", "years"), language = "ko",timepicker = TRUE
+    )      
+  )
 )
 
 ui <- page_navbar(
@@ -69,12 +85,26 @@ ui <- page_navbar(
                               options = list(`live-search`= TRUE, title = "Select Drug")
           )
         ),
-        layout_columns(
-          col_widths = c(2,4),
-          "Route", pickerInput("route", label = NULL, choices = c("Intravenous Bolus", "Oral"),
-                               options = list(`live-search`= TRUE, title = "Select Drug Route")
+          
+        conditionalPanel(
+          condition = "input.drug == 'Vancomycin'",  
+          layout_columns(
+            col_widths = c(2,4),
+            "Route", pickerInput("route", label = NULL, choices = c("Intravenous Infusion"),
+                                 options = list(`live-search`= TRUE, title = "Select Drug Route") 
+            )
+          )
+        ),
+        conditionalPanel(
+          condition = "input.drug == 'Cyclosporin'",  
+          layout_columns(
+            col_widths = c(2,4),
+            "Route", pickerInput("route", label = NULL, choices = c("Intravenous Bolus", "Oral"),
+                                 options = list(`live-search`= TRUE, title = "Select Drug Route") 
+            )
           )
         )
+        
       ),
       list(
         card(
@@ -217,7 +247,16 @@ server <- function(input, output, session) {
       stop("Select the drug")  # 예외 처리
     }
   })
-  
+  observe({
+    req(input$route)  # route 값이 NULL이 아닐 때만 실행
+    if (input$route == "Intravenous Infusion") {
+      updatePickerInput(session, "route2", selected = "Intravenous Infusion")
+    } else if (input$route == "Intravenous Bolus") {
+      updatePickerInput(session, "route3", selected = "Intravenous Bolus")
+    } else if (input$route == "Oral") {
+      updatePickerInput(session, "route2", selected = "Oral")
+    }
+  })
   
   # 1. Reactive로 환자 정보 저장
   patient_info <- reactive({
@@ -481,7 +520,6 @@ server <- function(input, output, session) {
   })
   
   output$population <- renderPlot({
-    validate(need(input$drug, "Please select a drug first"))
     
     sim_data <- sim()
     req(sim_data)
