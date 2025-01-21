@@ -4,6 +4,7 @@ library(shinyWidgets)
 library(tidyverse)
 library(rxode2)
 library(DT)
+library(rmarkdown)
 
 source("model.R")
 
@@ -13,7 +14,7 @@ side <- card(
     label = "Export Patients Report",
     style = "bordered"
   ),
-  textInput("dfa", label = NULL)
+  uiOutput("dfa")
 )
 input <- list(
   pickerInput("route2", label = "Route", choices = c("Intermittent IV-Injuection", "Continuous IV-Injection"),
@@ -40,7 +41,7 @@ ui <- page_navbar(
         h5("Patients"),
         layout_columns(
           col_widths = c(2,4,2,4,2,4,2,4,2,4),
-          h3("First"),textInput("rirst", label = NULL),
+          h3("First"),textInput("first", label = NULL),
           h3("Last"), textInput("last", label = NULL),
           h3("Birthdate"),airDatepickerInput("date1",label = NULL, view = c("days", "months", "years"),language = "ko"),
           h3("Age"), textOutput("current_age"),
@@ -146,7 +147,7 @@ ui <- page_navbar(
     title = "Drug Monitering",
     layout_columns(
       fillable = TRUE, 
-      col_widths = c(3, 9),
+      col_widths = c(2, 10),
       side,
       list(
         layout_columns(
@@ -164,6 +165,7 @@ ui <- page_navbar(
                 navset_underline(
                   nav_panel(
                     title = "Population",
+                    hr(),
                     actionBttn("report2", label = "Add Dose"),
                     textOutput("recommended_dose")
                   ),
@@ -207,13 +209,97 @@ ui <- page_navbar(
 server <- function(input, output, session) {
   
   model <- reactive({
-    if(input$drug == "Vancomycin") {
+    if (input$drug == "Vancomycin") {
       vancomycin
-    } else if(input$drug == "Cyclosporin") {
+    } else if (input$drug == "Cyclosporin") {
       cyclosporin
+    } else {
+      stop("Select the drug")  # 예외 처리
     }
-    
   })
+  
+  
+  # 1. Reactive로 환자 정보 저장
+  patient_info <- reactive({
+    list(
+      FirstName = input$first,
+      LastName = input$last,
+      Birthdate = input$date1,
+      Age = current_age(),
+      Weight = input$weight,
+      Height = input$height,
+      Sex = input$sex,
+      PatientID = input$patient
+    )
+  })
+  
+  # 2. RMarkdown 파일 생성 및 렌더링
+  output$dfa <- renderUI({
+    req(patient_info())  # patient_info가 있어야 실행
+    info <- patient_info()
+    current_dir <- getwd()
+    
+    # RMarkdown 파일 내용 생성
+    rmd_content <- c(
+      "---",
+      "title: 'Patient Report'",
+      "output: html_fragment",
+      "---",
+      "",
+      "# Patient Information",
+      paste0("- **First Name**: ", info$FirstName),
+      paste0("- **Last Name**: ", info$LastName),
+      paste0("- **Birthdate**: ", info$Birthdate),
+      paste0("- **Age**: ", info$Age),
+      paste0("- **Weight**: ", info$Weight, " kg"),
+      paste0("- **Height**: ", info$Height, " cm"),
+      paste0("- **Sex**: ", info$Sex),
+      paste0("- **Patient ID**: ", info$PatientID)
+    )
+    
+    # 임시 .Rmd 파일 생성
+    temp_file <- file.path(tempdir(), "Temporary.Rmd")
+    writeLines(rmd_content, con = temp_file)
+    
+    # .Rmd 파일 렌더링
+    tryCatch({
+      # HTML로 렌더링
+      rmarkdown::render(temp_file, output_format = "html_fragment", quiet = TRUE)
+      
+      # 렌더링된 HTML 파일 읽기
+      html_file <- paste0(tools::file_path_sans_ext(temp_file), ".html")
+      table_html <- readLines(html_file, warn = FALSE)
+      
+      # HTML 출력
+      HTML(table_html)
+    }, error = function(e) {
+      # 에러 메시지를 HTML로 출력
+      HTML(paste("Error occurred while rendering Markdown:", e$message))
+    })
+  })
+  
+  # 3. Markdown 파일 다운로드
+  output$report1 <- downloadHandler(
+    filename = function() {
+      paste0("Patient_Report_", Sys.Date(), ".md")
+    },
+    content = function(file) {
+      info <- patient_info()
+      report_content <- paste(
+        "# Patient Information\n",
+        "- **First Name**: ", info$FirstName, "\n",
+        "- **Last Name**: ", info$LastName, "\n",
+        "- **Birthdate**: ", info$Birthdate, "\n",
+        "- **Age**: ", info$Age, "\n",
+        "- **Weight**: ", info$Weight, " kg\n",
+        "- **Height**: ", info$Height, " cm\n",
+        "- **Sex**: ", info$Sex, "\n",
+        "- **Patient ID**: ", info$PatientID, "\n"
+      )
+      writeLines(report_content, file)
+    }
+  )
+  
   
   output$model <- renderPrint({
     
@@ -254,7 +340,8 @@ server <- function(input, output, session) {
     }
   })
   
-  dosage_history <- reactiveVal(data.frame(
+  dosage_history <- reactiveVal(
+    data.frame(
     DateTime = character(),
     Ctrough = numeric(),
     Infusion_Time= numeric(),
@@ -320,84 +407,7 @@ server <- function(input, output, session) {
   
   recommended_dose <- reactiveVal(NULL) 
   
-  observeEvent(input$report2, {
-    req(input$targettrough2, input$infusiontime2, input$interval2)  
-    
-    target_trough <- as.numeric(input$targettrough2)
-    infusion_time <- as.numeric(input$infusiontime2)
-    interval <- as.numeric(input$interval2)
-    
-    init <- c(central = 0, peri = 0)
-    params <- c(CL = 2.82, V1 = 31.8, Q = 11.7, V2 = 75.4, e.CL = 0, e.V2 = 0)
-    
-    result <- optim(
-      par = 100,
-      fn = function(dose) {
-        sim <- model |> 
-          rxSolve(
-            params, 
-            init, 
-            events = et(amt = dose, dur = infusion_time) |> 
-              add.sampling(seq(0, interval*2, by = 0.1)
-                           )
-          )
-        
-        
-        if (nrow(sim) == 0) return(Inf)
-        trough <- tail(sim$central, 1)
-        return((trough - target_trough)^2)
-      },
-      method="L-BFGS-B"
-    )
-    
-    if (result$convergence == 0) {
-      recommended_dose(round(result$par, 2)) # Update reactive value
-    } else {
-      recommended_dose(NULL) # Reset if optimization fails
-    }
-  })
   
-  output$recommended_dose <- renderText({
-    if (!is.null(recommended_dose())) {
-      paste("Recommended Dose:", recommended_dose(), "mg")
-    } else {
-      "Optimization failed. Please check inputs."
-    }
-  })
-
-
-  output$population <- renderPlot({
-    dose <- recommended_dose()
-    
-    if (!is.null(dose)) {
-      target_trough <- as.numeric(input$targettrough2)
-      infusion_time <- as.numeric(input$infusiontime2)
-      interval <- as.numeric(input$interval2)
-      
-      init <- c(central = 0, peri = 0)
-      params <- c(CL = 2.82, V1 = 31.8, Q = 11.7, V2 = 75.4, e.CL = 0, e.V2 = 0)
-      
-      sim <- model |> 
-        rxSolve(
-          params, 
-          init, 
-          events = et(amt = dose, dur = infusion_time) |> 
-            add.sampling(seq(0, interval*2, by = 0.1))
-        )
-    
-      sampling_data <- sampling_history() 
-      
-    
-      ggplot(sim, aes(x = time, y = central)) +
-        geom_line(color = "black", size = 1) + 
-        geom_point(data = sampling_data, aes(x = Time, y = Concentration), color = "blue", size = 2) +
-        geom_hline(yintercept = target_trough, linetype = "dashed", color = "red", size = 0.8) +  theme_bw() +
-        labs(x = "Time (hours)",y = "Vancomycin Concentration (mg/L)")  + scale_x_continuous(breaks = seq(0,interval*2,4))
-    } else {
-      NULL
-    }
-    
-  })
   
   
   
@@ -449,6 +459,42 @@ server <- function(input, output, session) {
     }
   })
   
+  sim <- reactiveVal(NULL)
+  
+  observeEvent(input$report2, {
+    
+    init <- c(central = 0, peri = 0)
+    params <- c(CL = 2.82, V1 = 31.8, Q = 11.7, V2 = 75.4, e.CL = 0, e.V2 = 0)
+    
+    current_model <- model()
+    
+    sim_result <- current_model |> 
+      rxSolve(
+        params, 
+        init, 
+        events = et(amt = as.numeric(input$targettrough2), 
+                    dur = as.numeric(input$infusiontime2)) |> 
+          add.sampling(seq(0, as.numeric(input$interval2)*2, by = 0.1))
+      )
+    
+    sim(sim_result)
+  })
+  
+  output$population <- renderPlot({
+    validate(need(input$drug, "Please select a drug first"))
+    
+    sim_data <- sim()
+    req(sim_data)
+    
+    df <- as.data.frame(sim_data)
+    
+    ggplot(data = df, aes(x = time, y = central/V1)) +  
+      geom_line(color = "black", size = 1) + 
+      theme_bw() +
+      labs(x = "Time (hours)", 
+           y = "Concentration (mg/L)",
+           title = paste(input$drug, "Concentration vs Time"))
+  })
 }
 
 shinyApp(ui, server)

@@ -31,13 +31,12 @@ vancomycin <- function() {
     k1 <- Q/V1
     k2 <- Q/V2
     ke <- CL/V1
-    scale1 <- V1/1000
     
     #DES
     d/dt(central) <- peri*k2 - central*(ke+k1)
     d/dt(peri) <- central*k1 - peri*k2
     
-    f <- central/scale1
+    f <- central/V1
     ipred <- f
     ipred ~ add(Additive) + prop(Proportional) + combined2()
   })
