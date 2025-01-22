@@ -41,8 +41,8 @@ input <- list(
     ),
     textInput("targettrough2",label = "Dose (mg)"),
     textInput("interval2", label = "Interval (hr)"),
-    airDatepickerInput("date2",label = "Dose Time", view = c("days", "months", "years"), language = "ko",timepicker = TRUE
-    )      
+    airDatepickerInput("date2",label = "Dose Time",value = Sys.time(),  view = "days", timepicker = TRUE,  language = "ko", dateFormat = "yyyy-MM-dd", clearButton = TRUE
+    )     
   )
 )
 
@@ -87,10 +87,10 @@ ui <- page_navbar(
         ),
           
         conditionalPanel(
-          condition = "input.drug == 'Vancomycin'",  
+          condition = "input.drug =='Vancomycin'",  
           layout_columns(
             col_widths = c(2,4),
-            "Route", pickerInput("route", label = NULL, choices = c("Intravenous Infusion"),
+            "Route", pickerInput("route4", label = NULL, choices = c("Intravenous Infusion"),
                                  options = list(`live-search`= TRUE, title = "Select Drug Route") 
             )
           )
@@ -99,7 +99,7 @@ ui <- page_navbar(
           condition = "input.drug == 'Cyclosporin'",  
           layout_columns(
             col_widths = c(2,4),
-            "Route", pickerInput("route", label = NULL, choices = c("Intravenous Bolus", "Oral"),
+            "Route", pickerInput("route5", label = NULL, choices = c("Intravenous Bolus", "Oral"),
                                  options = list(`live-search`= TRUE, title = "Select Drug Route") 
             )
           )
@@ -244,21 +244,41 @@ server <- function(input, output, session) {
     } else if (input$drug == "Cyclosporin") {
       cyclosporin
     } else {
-      stop("Select the drug")  # 예외 처리
-    }
-  })
-  observe({
-    req(input$route)  # route 값이 NULL이 아닐 때만 실행
-    if (input$route == "Intravenous Infusion") {
-      updatePickerInput(session, "route2", selected = "Intravenous Infusion")
-    } else if (input$route == "Intravenous Bolus") {
-      updatePickerInput(session, "route3", selected = "Intravenous Bolus")
-    } else if (input$route == "Oral") {
-      updatePickerInput(session, "route2", selected = "Oral")
+      stop("Select the drug")  
     }
   })
   
-  # 1. Reactive로 환자 정보 저장
+  observe({
+    req(input$drug == "Cyclosporin")  
+
+    updatePickerInput(session, "route5",
+                      choices = c("Intravenous Bolus", "Oral"))
+    updatePickerInput(session, "route3",
+                      choices = c("Intravenous Bolus", "Oral"))
+  })
+  
+
+  observeEvent(input$route5, {
+    req(input$drug == "Cyclosporin")  
+    
+    updatePickerInput(session, "route3",
+                      selected = input$route5,
+                      choices = c("Intravenous Bolus", "Oral"))
+  }, ignoreInit = FALSE)
+  
+
+  observe({
+    req(input$drug == "Vancomycin")  
+    
+    updatePickerInput(session, "route4", 
+                      choices = c("Intravenous Infusion"),
+                      selected = "Intravenous Infusion")
+    updatePickerInput(session, "route2", 
+                      choices = c("Intravenous Infusion"),
+                      selected = "Intravenous Infusion")
+  })
+  
+
   patient_info <- reactive({
     list(
       FirstName = input$first,
@@ -382,7 +402,7 @@ server <- function(input, output, session) {
   dosage_history <- reactiveVal(
     data.frame(
     DateTime = character(),
-    Ctrough = numeric(),
+    Dose = numeric(),
     Infusion_Time= numeric(),
     Route = character(),
     Interval = numeric(),
@@ -391,24 +411,39 @@ server <- function(input, output, session) {
   
 
   observeEvent(input$report2, {
-    if (!is.null(input$date2) && !is.null(input$interval2) && !is.null(input$infusiontime2)&& !is.null(input$route2)) {
+    
+    dose_datetime <- as.POSIXct(input$date2, format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+    
+    if(input$drug == "Vancomycin") {
+      req(input$infusiontime2, input$route2)
+      
       new_dose <- data.frame(
-        DateTime = format(input$date2, "%Y-%m-%d %H:%M"),
-        Ctrough = as.numeric(input$targettrough2),
+        DateTime = format(dose_datetime, "%Y-%m-%d %H:%M"),
+        Dose = as.numeric(input$targettrough2),
         Infusion_Time = as.numeric(input$infusiontime2),
         Route = input$route2,
-        Interval = input$interval2,
+        Interval = as.numeric(input$interval2),
         stringsAsFactors = FALSE
       )
+    } else if(input$drug == "Cyclosporin") {
+      req(input$route3)
       
-
-      current_history <- dosage_history()
-      updated_history <- rbind(current_history, new_dose)
-      updated_history <- updated_history[order(updated_history$DateTime), ]
-      dosage_history(updated_history)
+      new_dose <- data.frame(
+        DateTime = format(dose_datetime, "%Y-%m-%d %H:%M"),
+        Dose = as.numeric(input$targettrough2),
+        Infusion_Time = NA,
+        Route = input$route3,
+        Interval = as.numeric(input$interval2),
+        stringsAsFactors = FALSE
+      )
     }
+    
+    
+    current_history <- dosage_history()
+    updated_history <- rbind(current_history, new_dose)
+    updated_history <- updated_history[order(as.POSIXct(updated_history$DateTime)), ]
+    dosage_history(updated_history)
   })
-  
 
   observeEvent(input$deleteRow2, {
     selected <- input$dosageTable_rows_selected
@@ -421,8 +456,35 @@ server <- function(input, output, session) {
   
 
   output$dosageTable <- renderDT({
+
+    history <- dosage_history()
+    if (nrow(history) == 0) {
+      return(datatable(
+        data.frame(
+          DateTime = character(),
+          Dose = numeric(),
+          Infusion_Time = numeric(),
+          Route = character(),
+          Interval = numeric(),
+          stringsAsFactors = FALSE
+        ),
+        editable = TRUE,
+        selection = "single",
+        options = list(
+          pageLength = 5,
+          lengthMenu = c(5, 10, 15),
+          ordering = TRUE,
+          searching = TRUE
+        )
+      ))
+    }
+
+    if(input$drug == "Cyclosporin") {
+      history$Infusion_Time <- NULL
+    }
+    
     datatable(
-      dosage_history(),
+      history,
       editable = TRUE,
       selection = "single",
       options = list(
@@ -432,6 +494,7 @@ server <- function(input, output, session) {
         searching = TRUE
       )
     )
+    
   })
   
 
@@ -499,10 +562,21 @@ server <- function(input, output, session) {
   })
   
   sim <- reactiveVal(NULL)
+  scenario <- reactiveVal(NULL)
   
   observeEvent(input$report2, {
+    print("Current Dosage History:")
+    print(dosage_history())  # reactiveVal의 현재 값을 가져옴
     
-    init <- c(central = 0, peri = 0)
+    # 더 자세한 정보를 보고 싶다면
+    print("Structure of Dosage History:")
+    str(dosage_history())
+    
+    print("Summary of Dosage History:")
+    print(summary(dosage_history()))
+  })
+  
+  observeEvent(input$report2, {
     params <- c(CL = 2.82, V1 = 31.8, Q = 11.7, V2 = 75.4, e.CL = 0, e.V2 = 0)
     
     current_model <- model()
@@ -510,12 +584,10 @@ server <- function(input, output, session) {
     sim_result <- current_model |> 
       rxSolve(
         params, 
-        init, 
         events = et(amt = as.numeric(input$targettrough2), 
                     dur = as.numeric(input$infusiontime2)) |> 
           add.sampling(seq(0, as.numeric(input$interval2)*2, by = 0.1))
       )
-    
     sim(sim_result)
   })
   
@@ -524,14 +596,14 @@ server <- function(input, output, session) {
     sim_data <- sim()
     req(sim_data)
     
-    df <- as.data.frame(sim_data)
+    df <- as_tibble(sim_data)
     
     ggplot(data = df, aes(x = time, y = central/V1)) +  
-      geom_line(color = "black", size = 1) + 
+      geom_line(color = "red") + 
       theme_bw() +
       labs(x = "Time (hours)", 
-           y = "Concentration (mg/L)",
-           title = paste(input$drug, "Concentration vs Time"))
+           y = "Vancomycin Concentration (mg/L)",
+           ) + geom_hline( yintercept = 15, color = "darkorange3") + geom_hline(yintercept = 40, color = "darkorange2")
   })
 }
 
