@@ -116,31 +116,8 @@ ui <- page_navbar(
           h4("Lab Results"),
           layout_columns(
             col_widths = c(4, 4), 
-            radioButtons(
-              "lab",
-              label = NULL,
-              choices = c("Scr" = "scr", "Exact CrCl" = "crcl"),
-              selected = "scr"
-            ),
-            div(
-              class = "input-row",
-              conditionalPanel(
-                condition = "input.lab == 'scr'",
-                textInput("cr_scr", label = NULL, placeholder = "Enter Serum Concentration", width = "80%")
-              ),
-              conditionalPanel(
-                condition = "input.lab == 'crcl'",
-                textInput("cr_crcl", label = NULL, placeholder = "Enter CrCl value", width = "80%")
-              ),
-              conditionalPanel(
-                condition = "input.lab == 'scr'",
-                h3("mg/dL")
-              ),
-              conditionalPanel(
-                condition = "input.lab == 'crcl'",
-                h3("mL/min")
-              )
-            ),
+            textInput("cr_scr", label = NULL, placeholder = "Enter Serum Concentration", width = "80%"),
+            h3("mg/dL")
           ),
           conditionalPanel(
             "input.drug == `Cyclosporin`",
@@ -150,6 +127,12 @@ ui <- page_navbar(
             )
           )
         ),
+        card(
+          h5("Renal Function"),
+          tableOutput("renal")
+        )
+      ),
+      list(
         card(
           h4("Model"),
           conditionalPanel(
@@ -167,10 +150,6 @@ ui <- page_navbar(
             )
           )
         )
-      ),
-      card(
-        h5("Renal Function"),
-        tableOutput("renal")
       ),
       card(
         h4("Population PK model"),
@@ -382,19 +361,19 @@ server <- function(input, output, session) {
   })
   
   output$renal <- renderTable({
-    
-    if (input$sex == "Male" && input$lab == "scr") {
-      renal <- tibble(
-        "A" = "Crcl",
-        "B" = (140-current_age())*as.double(input$weight)/(72*as.double(input$cr_scr))
+    if (input$sex == "Male") {
+      tibble(
+        CRCL = "CRCL",
+        Value = (140 - current_age()) * as.double(input$weight) / (72 * as.double(input$cr_scr))
       )
-    } else if(input$sex == "Female" && input$lab == "scr"){
-      renal <- tibble(
-        "A" = "Crcl",
-        "B" = (140-current_age())*as.double(input$weight)/(72*as.double(input$cr_scr))*0.85
+    } else if (input$sex == "Female") {
+      tibble(
+        CRCL = "CRCL",
+        Value = (140 - current_age()) * as.double(input$weight) / (72 * as.double(input$cr_scr)) * 0.85
       )
     }
   })
+  
   
   dosage_history <- reactiveVal(
     tibble(
@@ -408,23 +387,23 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$report2, {
-
+    
     if(input$drug == "Vancomycin") {
-        
-        new_dose <- tibble(
-          Dose = as.numeric(input$targettrough2),
-          Time = as.numeric(input$time2),
-          Infusion_Time = as.numeric(input$infusiontime2),
-          Route = input$route2
-        )
+      
+      new_dose <- tibble(
+        Dose = as.numeric(input$targettrough2),
+        Time = as.numeric(input$time2),
+        Infusion_Time = as.numeric(input$infusiontime2),
+        Route = input$route2
+      )
       
     } else if(input$drug == "Cyclosporin") {
-        new_dose <- tibble(
-          Dose = as.numeric(input$targettrough2),
-          Time = as.numeric(input$time2),
-          Infusion_Time = NA,
-          Route = input$route3
-        )
+      new_dose <- tibble(
+        Dose = as.numeric(input$targettrough2),
+        Time = as.numeric(input$time2),
+        Infusion_Time = NA,
+        Route = input$route3
+      )
     }
     
     # Get current history and append new dose
@@ -510,9 +489,9 @@ server <- function(input, output, session) {
   
   sampling_history <- reactiveVal(
     tibble(
-    Time = numeric(),
-    Concentration = numeric()
-  ))
+      Time = numeric(),
+      Concentration = numeric()
+    ))
   
   output$sampling2 <- renderDT({
     datatable(
@@ -569,8 +548,8 @@ server <- function(input, output, session) {
           et(dose = history$Dose[i],
              time = history$Time[i],
              dur = ifelse(!is.na(history$Infusion_Time[i]), 
-                           history$Infusion_Time[i], 
-                           NULL)
+                          history$Infusion_Time[i], 
+                          NULL)
           )
       }
       dose <- dose |> 
@@ -587,11 +566,11 @@ server <- function(input, output, session) {
     sim_result <- current_model |> 
       rxSolve(
         params, 
-         dosing()
+        dosing()
       )
     sim(sim_result)
   })
-
+  
   
   sim_optim <- reactiveVal(NULL)
   
